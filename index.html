@@ -1,215 +1,833 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interaktywny Skrypt Rozmowy</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fa; }
-        .container { max-width: 600px; margin: 40px auto; padding: 16px; }
-        .card { background: white; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 20px; }
-        .header { margin-bottom: 12px; }
-        .button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; margin: 8px 0; background: #10b981; color: white; font-weight: bold; }
-        .button.secondary { background: #888;}
-        .input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px;}
-        .tip { background: #fffbe5; border-left: 3px solid #ffd700; padding: 10px; margin: 10px 0; border-radius: 6px; font-size: 0.9em; }
-        .history { background: #f3f3f7; padding: 8px; border-radius: 5px; font-size: 0.95em; margin-top: 10px;}
-        .history-item { color: #555; margin-bottom: 2px; }
-        textarea { width: 100%; border-radius: 5px; border: 1px solid #ddd; padding: 8px; margin-bottom: 10px;}
-    </style>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
+import React, { useState, useMemo } from 'react';
+import { Phone, ChevronRight, Calculator, AlertCircle, CheckCircle, RefreshCw, MessageSquare, User, Home, DollarSign, Clock, Target } from 'lucide-react';
 
-function SkryptRozmowy() {
-  const [etap, setEtap] = React.useState('start');
-  const [profil, setProfil] = React.useState('');
-  const [notatki, setNotatki] = React.useState('');
-  const [klient, setKlient] = React.useState({ imie: '', typ: '', metraz: '', rachunek: '', problemy: [] });
-  const [historia, setHistoria] = React.useState([]);
+const InteractiveCallScript = () => {
+  const [stage, setStage] = useState('start');
+  const [contactType, setContactType] = useState('');
+  const [clientProfile, setClientProfile] = useState('');
+  const [notes, setNotes] = useState('');
+  const [clientData, setClientData] = useState({
+    name: '',
+    propertyType: '',
+    area: '',
+    monthlyBill: '',
+    problems: []
+  });
+  const [history, setHistory] = useState([]);
+  const [showCalculator, setShowCalculator] = useState(false);
 
-  function dodajDoHistorii(tekst) {
-    setHistoria(h => h.concat([{ czas: new Date().toLocaleTimeString(), tekst }]));
-  }
+  // Kalkulator
+  const calculations = useMemo(() => {
+    const area = parseFloat(clientData.area) || 0;
+    const bill = parseFloat(clientData.monthlyBill) || 0;
+    
+    const rekuperatorCount = area <= 80 ? 1 : area <= 120 ? 2 : area <= 180 ? 3 : 4;
+    const rekuperatorCost = 2800 + (rekuperatorCount - 1) * 3200;
+    const pscLiters = area * 0.33;
+    const pscCost = pscLiters * 110;
+    const totalKomfort = rekuperatorCost + pscCost + 2000;
+    const savings = bill * 0.3;
+    const annualSavings = savings * 12;
+    const roi = totalKomfort / annualSavings;
+    
+    return {
+      rekuperatorCount,
+      rekuperatorCost,
+      pscCost,
+      totalKomfort,
+      savings,
+      annualSavings,
+      roi
+    };
+  }, [clientData.area, clientData.monthlyBill]);
 
-  function przejdzDoEtapu(nowy, akcja) {
-    setEtap(nowy);
-    if (akcja) dodajDoHistorii(akcja);
-  }
+  const addToHistory = (action) => {
+    setHistory([...history, { time: new Date().toLocaleTimeString(), action }]);
+  };
 
-  function Start() {
-    return (
-      <div className="card">
-        <div className="header">
-          <h2>Zdrowe Mieszkanie+</h2>
-          <div className="tip">
-            <strong>Cel rozmowy:</strong>
-            <ul>
-              <li>Umówić spotkanie diagnostyczne</li>
-              <li>Zamknięcie sprzedaży</li>
-              <li>Pozostawić kontakt na przyszłość</li>
-            </ul>
-          </div>
-        </div>
+  const goToStage = (newStage, action) => {
+    setStage(newStage);
+    if (action) addToHistory(action);
+  };
+
+  // KOMPONENTY ETAPÓW
+
+  const StartScreen = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <Phone className="w-16 h-16 mx-auto mb-4 text-green-600" />
+        <h2 className="text-3xl font-bold mb-2">Zdrowe Mieszkanie+</h2>
+        <p className="text-gray-600">Interaktywny Skrypt Rozmowy</p>
+      </div>
+
+      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <p className="font-semibold mb-2">🎯 Cel rozmowy:</p>
+        <ul className="text-sm space-y-1">
+          <li>✅ Główny: Umówić spotkanie diagnostyczne</li>
+          <li>✅ Idealny: Bezpośrednie zamknięcie sprzedaży</li>
+          <li>✅ Minimalny: Pozostawić kontakt na przyszłość</li>
+        </ul>
+      </div>
+
+      <div className="space-y-4">
         <div>
-          <div style={{marginBottom:8}}>Typ kontaktu:</div>
-          <button className="button secondary" onClick={() => przejdzDoEtapu('profil', 'Wybrano kontakt ciepły')}>Ciepły</button>
-          <button className="button secondary" onClick={() => przejdzDoEtapu('profil', 'Wybrano kontakt zimny')}>Zimny</button>
-        </div>
-      </div>
-    );
-  }
-
-  function Profil() {
-    return (
-      <div className="card">
-        <h3>Profil Klienta</h3>
-        <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
-          <button className="button secondary" style={{flex:1}}
-            onClick={()=>{ setProfil('rodzina'); przejdzDoEtapu('imie', 'Profil: Rodzina'); }}>
-            Rodzina
-          </button>
-          <button className="button secondary" style={{flex:1}}
-            onClick={()=>{ setProfil('senior'); przejdzDoEtapu('imie', 'Profil: Senior'); }}>
-            Senior
-          </button>
-          <button className="button secondary" style={{flex:1}}
-            onClick={()=>{ setProfil('eko'); przejdzDoEtapu('imie', 'Profil: Eko'); }}>
-            Eko
-          </button>
-          <button className="button secondary" style={{flex:1}}
-            onClick={()=>{ setProfil('sceptyk'); przejdzDoEtapu('imie', 'Profil: Sceptyk'); }}>
-            Sceptyk
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  function Imie() {
-    return (
-      <div className="card">
-        <h3>Imię i nazwisko</h3>
-        <input className="input" placeholder="Imię i nazwisko"
-          value={klient.imie} onChange={e => setKlient({...klient, imie:e.target.value})} />
-        <button className="button" onClick={()=>przejdzDoEtapu('typ', 'Podał imię')}>Dalej</button>
-      </div>
-    );
-  }
-
-  function Typ() {
-    return (
-      <div className="card">
-        <h3>Typ nieruchomości</h3>
-        <button className="button secondary" style={{marginRight:8}}
-          onClick={()=>setKlient({...klient, typ:'mieszkanie'})}>
-          Mieszkanie
-        </button>
-        <button className="button secondary"
-          onClick={()=>setKlient({...klient, typ:'dom'})}>
-          Dom
-        </button>
-        <button className="button" disabled={!klient.typ} onClick={()=>przejdzDoEtapu('metraz', 'Podał typ')}>Dalej</button>
-      </div>
-    );
-  }
-
-  function Metraz() {
-    return (
-      <div className="card">
-        <h3>Powierzchnia</h3>
-        <input className="input" type="number" placeholder="Metraż w m²"
-          value={klient.metraz} onChange={e => setKlient({...klient, metraz:e.target.value})} />
-        <button className="button" disabled={!klient.metraz} onClick={()=>przejdzDoEtapu('rachunek', 'Podał metraż')}>Dalej</button>
-      </div>
-    );
-  }
-
-  function Rachunek() {
-    return (
-      <div className="card">
-        <h3>Rachunki</h3>
-        <input className="input" type="number" placeholder="Rachunek za ogrzewanie"
-          value={klient.rachunek} onChange={e => setKlient({...klient, rachunek:e.target.value})} />
-        <button className="button" disabled={!klient.rachunek} onClick={()=>przejdzDoEtapu('problemy', 'Podał rachunek')}>Dalej</button>
-      </div>
-    );
-  }
-
-  function Problemy() {
-    const lista = ['Wysokie rachunki', 'Wilgoć', 'Zapachy', 'Alergie'];
-    return (
-      <div className="card">
-        <h3>Problemy</h3>
-        {lista.map(p =>
-          <label key={p} style={{display:'block',marginBottom:4}}>
-            <input type="checkbox" checked={klient.problemy.indexOf(p)!==-1}
-              onChange={e=>{
-                setKlient({
-                  ...klient,
-                  problemy: e.target.checked ?
-                    klient.problemy.concat(p):
-                    klient.problemy.filter(x=>x!==p)
-                });
-              }} /> {p}
-          </label>
-        )}
-        <button className="button" disabled={klient.problemy.length===0}
-          onClick={()=>przejdzDoEtapu('podsumowanie', 'Zaznaczył problemy')}>Dalej</button>
-      </div>
-    );
-  }
-
-  function Podsumowanie() {
-    return (
-      <div className="card">
-        <h3>Podsumowanie</h3>
-        <div><strong>Imię:</strong> {klient.imie}</div>
-        <div><strong>Typ:</strong> {klient.typ}</div>
-        <div><strong>Metraż:</strong> {klient.metraz} m²</div>
-        <div><strong>Rachunek:</strong> {klient.rachunek} zł</div>
-        <div><strong>Problemy:</strong> {klient.problemy.join(', ')}</div>
-        <div className="tip">
-          Zaproponuj spotkanie lub wyślij ofertę!
-        </div>
-        <button className="button" onClick={()=>przejdzDoEtapu('start', 'Nowa rozmowa')}>Nowa rozmowa</button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container">
-      <div className="card">
-        <div className="header">
-          <h2>Interaktywny Skrypt</h2>
-          <div style={{fontSize:'0.95em', color:'#666'}}>Zdrowe Mieszkanie+</div>
-        </div>
-      </div>
-      {etap==='start' && <Start/>}
-      {etap==='profil' && <Profil/>}
-      {etap==='imie' && <Imie/>}
-      {etap==='typ' && <Typ/>}
-      {etap==='metraz' && <Metraz/>}
-      {etap==='rachunek' && <Rachunek/>}
-      {etap==='problemy' && <Problemy/>}
-      {etap==='podsumowanie' && <Podsumowanie/>}
-      <div className="card">
-        <div><strong>Notatki:</strong></div>
-        <textarea value={notatki} onChange={e=>setNotatki(e.target.value)} placeholder="Notatki..." />
-        <div><strong>Historia:</strong></div>
-        <div className="history">
-          {historia.map((h,i)=><div className="history-item" key={i}>{h.czas} – {h.tekst}</div>)}
+          <label className="block font-semibold mb-2">1. Typ kontaktu:</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => { setContactType('warm'); goToStage('profile', 'Wybrano kontakt ciepły'); }}
+              className="p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition"
+            >
+              <div className="font-semibold">☀️ Ciepły</div>
+              <div className="text-xs text-gray-600 mt-1">Polecenie, poprzedni kontakt</div>
+            </button>
+            <button
+              onClick={() => { setContactType('cold'); goToStage('profile', 'Wybrano kontakt zimny'); }}
+              className="p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition"
+            >
+              <div className="font-semibold">❄️ Zimny</div>
+              <div className="text-xs text-gray-600 mt-1">Baza danych, cold call</div>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
-}
 
-ReactDOM.render(<SkryptRozmowy />, document.getElementById('root'));
-</script>
-</body>
-</html>
+  const ProfileScreen = () => (
+    <div className="space-y-6">
+      <h3 className="text-2xl font-bold">2. Profil Klienta</h3>
+      <p className="text-gray-600">Wybierz który typ klienta pasuje najbardziej (możesz zmienić później):</p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button
+          onClick={() => { setClientProfile('family'); goToStage('opening', 'Profil: Młoda rodzina'); }}
+          className="p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition text-left"
+        >
+          <div className="font-semibold text-lg mb-2">👨‍👩‍👧‍👦 Młoda Rodzina</div>
+          <div className="text-sm text-gray-600">
+            Dzieci z alergią, wilgoć, zapachy
+            <br />
+            <strong>Hak:</strong> Zdrowe powietrze dla dzieci
+          </div>
+        </button>
+
+        <button
+          onClick={() => { setClientProfile('senior'); goToStage('opening', 'Profil: Senior'); }}
+          className="p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition text-left"
+        >
+          <div className="font-semibold text-lg mb-2">👴 Senior</div>
+          <div className="text-sm text-gray-600">
+            Wysokie rachunki, emerytura
+            <br />
+            <strong>Hak:</strong> Oszczędności 30%
+          </div>
+        </button>
+
+        <button
+          onClick={() => { setClientProfile('eco'); goToStage('opening', 'Profil: Świadomy ekologicznie'); }}
+          className="p-4 border-2 border-gray-300 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition text-left"
+        >
+          <div className="font-semibold text-lg mb-2">🌱 Świadomy Ekologicznie</div>
+          <div className="text-sm text-gray-600">
+            Ekologia, wartość nieruchomości
+            <br />
+            <strong>Hak:</strong> Ślad węglowy + ROI
+          </div>
+        </button>
+
+        <button
+          onClick={() => { setClientProfile('skeptic'); goToStage('opening', 'Profil: Sceptyk'); }}
+          className="p-4 border-2 border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition text-left"
+        >
+          <div className="font-semibold text-lg mb-2">🤔 Sceptyk</div>
+          <div className="text-sm text-gray-600">
+            Nie wierzy w obietnice
+            <br />
+            <strong>Hak:</strong> Dowody, gwarancje, certyfikaty
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+
+  const OpeningScreen = () => {
+    const hooks = {
+      family: "Pomagamy rodzinom pozbyć się problemu z wilgocią, pleśnią i alergenami - szczególnie ważne dla dzieci z alergią.",
+      senior: "Pomagamy obniżyć rachunki za ogrzewanie nawet o 30% - to średnio 2000-3000 zł oszczędności rocznie.",
+      eco: "Pomagamy zmniejszyć ślad węglowy domu i zwiększyć jego wartość rynkową o 10-15%.",
+      skeptic: "Realizujemy właśnie projekty termomodernizacyjne w Państwa okolicy z gwarancją efektywności na piśmie."
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold">3. Otwarcie</h3>
+          <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">⏱️ 10-15 sekund</span>
+        </div>
+
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+          <p className="font-semibold mb-2">💬 POWIEDZ:</p>
+          <div className="bg-white p-4 rounded border border-green-200">
+            {contactType === 'warm' ? (
+              <p className="text-lg leading-relaxed">
+                <strong>"Dzień dobry, nazywam się [Twoje Imię] z firmy 4-eco. Dzwonię w sprawie programu Zdrowe Mieszkanie Plus. Czy to dobry moment na krótką rozmowę?"</strong>
+                <br /><br />
+                [PAUZA - pozwól klientowi odpowiedzieć]
+                <br /><br />
+                {hooks[clientProfile]}
+              </p>
+            ) : (
+              <p className="text-lg leading-relaxed">
+                <strong>"Dzień dobry, mówi [Twoje Imię] z firmy 4-eco. Czy rozmawiam z Panem/Panią [Nazwisko]?"</strong>
+                <br /><br />
+                [Poczekaj na potwierdzenie]
+                <br /><br />
+                <strong>"Świetnie! Dzwonię, ponieważ aktualnie realizujemy w Państwa rejonie program Zdrowe Mieszkanie Plus. {hooks[clientProfile]} Czy to dobry moment na 2-minutową rozmowę?"</strong>
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+          <p className="font-semibold mb-2">⚠️ WSKAZÓWKA:</p>
+          <ul className="text-sm space-y-1">
+            <li>• Uśmiechnij się - słychać to przez telefon!</li>
+            <li>• Poczekaj na odpowiedź klienta</li>
+            <li>• Jeśli mówi "nie mam czasu" - przejdź do obiekcji</li>
+            <li>• Jeśli zgadza się - idź dalej do kwalifikacji</li>
+          </ul>
+        </div>
+
+        <div className="space-y-3">
+          <p className="font-semibold">Reakcja klienta:</p>
+          <button
+            onClick={() => goToStage('qualification', 'Klient zgodził się na rozmowę')}
+            className="w-full p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center justify-between"
+          >
+            <span>✅ "Ok, mów" / "Tak, słucham"</span>
+            <ChevronRight />
+          </button>
+          <button
+            onClick={() => goToStage('objection-time', 'Obiekcja: Nie mam czasu')}
+            className="w-full p-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center justify-between"
+          >
+            <span>⏰ "Nie mam czasu"</span>
+            <ChevronRight />
+          </button>
+          <button
+            onClick={() => goToStage('objection-interest', 'Obiekcja: Nie interesuje mnie')}
+            className="w-full p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center justify-between"
+          >
+            <span>❌ "Nie interesuje mnie to"</span>
+            <ChevronRight />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const QualificationScreen = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-2xl font-bold">4. Kwalifikacja</h3>
+        <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">⏱️ 1-2 minuty</span>
+      </div>
+
+      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <p className="font-semibold mb-2">🎯 CEL:</p>
+        <p className="text-sm">Zbierz dane do kalkulatora: typ nieruchomości, metraż, problemy, rachunki</p>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="font-semibold mb-2 block">📝 Dane Klienta (wypełniaj podczas rozmowy):</label>
+          
+          <div className="space-y-3 bg-white p-4 rounded-lg border">
+            <input
+              type="text"
+              placeholder="Imię i nazwisko"
+              value={clientData.name}
+              onChange={(e) => setClientData({...clientData, name: e.target.value})}
+              className="w-full p-2 border rounded"
+            />
+
+            <div>
+              <p className="text-sm font-semibold mb-2">💬 ZAPYTAJ: "Mieszkacie Państwo w mieszkaniu czy w domu jednorodzinnym?"</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setClientData({...clientData, propertyType: 'mieszkanie'})}
+                  className={`flex-1 p-2 rounded border-2 ${clientData.propertyType === 'mieszkanie' ? 'border-green-500 bg-green-50' : 'border-gray-300'}`}
+                >
+                  🏢 Mieszkanie
+                </button>
+                <button
+                  onClick={() => setClientData({...clientData, propertyType: 'dom'})}
+                  className={`flex-1 p-2 rounded border-2 ${clientData.propertyType === 'dom' ? 'border-green-500 bg-green-50' : 'border-gray-300'}`}
+                >
+                  🏠 Dom
+                </button>
+              </div>
+              {clientData.propertyType === 'dom' && (
+                <div className="mt-2 p-2 bg-green-50 rounded text-sm">
+                  ✅ <strong>ZANOTUJ:</strong> Dom = ulga termomodernizacyjna do 7300 zł!
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold mb-2">💬 ZAPYTAJ: "Jaka jest mniej więcej powierzchnia?"</p>
+              <input
+                type="number"
+                placeholder="Powierzchnia w m²"
+                value={clientData.area}
+                onChange={(e) => setClientData({...clientData, area: e.target.value})}
+                className="w-full p-2 border rounded"
+              />
+              {clientData.area && (
+                <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+                  💡 <strong>POWIEDZ:</strong> "Ok, {clientData.area}m² - to oznacza {calculations.rekuperatorCount} rekuperator{calculations.rekuperatorCount > 1 ? 'y' : ''} dla optymalnej wentylacji."
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold mb-2">💬 ZAPYTAJ: "Ile mniej więcej płacą Państwo miesięcznie za ogrzewanie i prąd?"</p>
+              <input
+                type="number"
+                placeholder="Rachunki w zł/miesiąc"
+                value={clientData.monthlyBill}
+                onChange={(e) => setClientData({...clientData, monthlyBill: e.target.value})}
+                className="w-full p-2 border rounded"
+              />
+              {clientData.monthlyBill && (
+                <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+                  💡 <strong>POWIEDZ:</strong> "{clientData.monthlyBill} zł miesięcznie, to daje {clientData.monthlyBill * 12} rocznie. System zaoszczędzi około 30% - czyli {Math.round(calculations.savings)} zł miesięcznie."
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold mb-2">💬 ZAPYTAJ: "Czy borykają się Państwo z którymś z tych problemów?"</p>
+              <div className="space-y-2">
+                {['Wysokie rachunki', 'Wilgoć/pleśń', 'Zapachy/duszność', 'Alergeny', 'Nierównomierna temperatura'].map(problem => (
+                  <label key={problem} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={clientData.problems.includes(problem)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setClientData({...clientData, problems: [...clientData.problems, problem]});
+                        } else {
+                          setClientData({...clientData, problems: clientData.problems.filter(p => p !== problem)});
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm">{problem}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {clientData.area && clientData.monthlyBill && (
+          <button
+            onClick={() => setShowCalculator(!showCalculator)}
+            className="w-full p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center justify-center gap-2"
+          >
+            <Calculator size={20} />
+            {showCalculator ? 'Ukryj' : 'Pokaż'} Kalkulator
+          </button>
+        )}
+
+        {showCalculator && (
+          <div className="bg-gradient-to-br from-green-50 to-blue-50 p-4 rounded-lg border-2 border-green-300">
+            <h4 className="font-bold mb-3 flex items-center gap-2">
+              <Calculator size={20} />
+              Szybki Kalkulator
+            </h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-white p-3 rounded">
+                <div className="text-gray-600">Rekuperatory</div>
+                <div className="text-xl font-bold">{calculations.rekuperatorCount} szt.</div>
+                <div className="text-xs text-gray-500">{calculations.rekuperatorCost.toFixed(0)} zł</div>
+              </div>
+              <div className="bg-white p-3 rounded">
+                <div className="text-gray-600">Farba PSC</div>
+                <div className="text-xl font-bold">{calculations.pscLiters.toFixed(0)} L</div>
+                <div className="text-xs text-gray-500">{calculations.pscCost.toFixed(0)} zł</div>
+              </div>
+              <div className="bg-white p-3 rounded">
+                <div className="text-gray-600">KOMFORT</div>
+                <div className="text-xl font-bold text-green-600">{calculations.totalKomfort.toFixed(0)} zł</div>
+                <div className="text-xs text-gray-500">z montażem</div>
+              </div>
+              <div className="bg-white p-3 rounded">
+                <div className="text-gray-600">Oszczędności</div>
+                <div className="text-xl font-bold text-blue-600">{Math.round(calculations.savings)} zł/mc</div>
+                <div className="text-xs text-gray-500">{Math.round(calculations.annualSavings)} zł/rok</div>
+              </div>
+              <div className="bg-white p-3 rounded col-span-2">
+                <div className="text-gray-600">Zwrot inwestycji (ROI)</div>
+                <div className="text-2xl font-bold text-purple-600">{calculations.roi.toFixed(1)} lat</div>
+                <div className="text-xs text-gray-500">Później czyste oszczędności przez 15+ lat</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={() => goToStage('presentation', 'Przejście do prezentacji')}
+          className="w-full p-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center justify-between text-lg font-semibold"
+        >
+          <span>Przejdź do Prezentacji</span>
+          <ChevronRight size={24} />
+        </button>
+      </div>
+    </div>
+  );
+
+  const PresentationScreen = () => {
+    const mainProblem = clientData.problems[0] || 'Wysokie rachunki';
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold">5. Prezentacja</h3>
+          <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">⏱️ 2-3 minuty</span>
+        </div>
+
+        <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
+          <p className="font-semibold mb-2">🎯 FOKUS:</p>
+          <p className="text-sm">Główny problem klienta: <strong>{mainProblem}</strong></p>
+        </div>
+
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+          <p className="font-semibold mb-2">💬 POWIEDZ:</p>
+          <div className="bg-white p-4 rounded border border-green-200 space-y-4">
+            <p className="leading-relaxed">
+              <strong>"Ok {clientData.name ? clientData.name.split(' ')[0] : 'Panie/Pani'}, więc bazując na tym co Pan/Pani powiedział - {clientData.propertyType} {clientData.area}m², rachunki około {clientData.monthlyBill} złotych miesięcznie - mam dla Państwa rozwiązanie."</strong>
+            </p>
+
+            <div className="border-t pt-4">
+              <p className="font-semibold mb-2">📦 PAKIET KOMFORT</p>
+              <ul className="space-y-2 ml-4">
+                <li className="leading-relaxed">
+                  <strong>1. Farba termoizolacyjna PSC Interior</strong> - to nie zwykła farba. Ma ceramiczne mikrosfery, które odbijają ciepło z powrotem do pokoju. Efekt? <span className="bg-yellow-200 px-1">Plus 2 stopnie cieplej bez dodatkowych kosztów ogrzewania</span>. Badania potwierdzają - +2°C odczuwalne.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>2. {calculations.rekuperatorCount} rekuperator{calculations.rekuperatorCount > 1 ? 'y' : ''} EasyEko</strong> - inteligentna wentylacja. Wypuszcza stare powietrze, wpuszcza świeże, ale... <span className="bg-yellow-200 px-1">odzyskuje 90% ciepła!</span> Efekt? Świeże powietrze bez strat energii. Plus filtry HEPA - zatrzymują 99,9% alergenów.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>3. Pełny montaż</strong> - wszystko pod klucz, 1-2 dni robót, gwarancja 5 lat.
+                </li>
+              </ul>
+            </div>
+
+            {clientData.area && clientData.monthlyBill && (
+              <div className="border-t pt-4 bg-blue-50 p-3 rounded">
+                <p className="font-semibold mb-2">💰 KOSZTY I OSZCZĘDNOŚCI:</p>
+                <ul className="space-y-1 text-sm">
+                  <li>• Koszt całości: około <strong className="text-lg">{calculations.totalKomfort.toFixed(0)} zł</strong></li>
+                  <li>• Oszczędności: <strong className="text-lg text-green-600">{Math.round(calculations.savings)} zł miesięcznie</strong> (30%)</li>
+                  <li>• Rocznie: <strong className="text-lg text-green-600">{Math.round(calculations.annualSavings)} zł</strong></li>
+                  <li>• Zwrot inwestycji: <strong className="text-lg text-purple-600">{calculations.roi.toFixed(1)} lat</strong></li>
+                  <li className="pt-2 border-t">• System działa 20 lat = <strong className="text-xl text-blue-600">{Math.round((20 - calculations.roi) * calculations.annualSavings).toFixed(0)} zł</strong> czystych oszczędności!</li>
+                </ul>
+              </div>
+            )}
+
+            <p className="leading-relaxed pt-4 border-t">
+              <strong>"To nie koszt - to inwestycja, która się spłaca. Pytanie brzmi: czy niższe rachunki i zdrowsze powietrze są dla Państwa ważne?"</strong>
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+          <p className="font-semibold mb-2">💡 WSKAZÓWKA:</p>
+          <ul className="text-sm space-y-1">
+            <li>• Mów wolno, z pauzami</li>
+            <li>• Podkreślaj konkretne liczby</li>
+            <li>• Czekaj na reakcję klienta</li>
+            <li>• Nie przytłaczaj szczegółami technicznymi</li>
+          </ul>
+        </div>
+
+        <div className="space-y-3">
+          <p className="font-semibold">Reakcja klienta:</p>
+          <button
+            onClick={() => goToStage('closing', 'Klient zainteresowany - przejście do zamknięcia')}
+            className="w-full p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center justify-between"
+          >
+            <span>✅ "Brzmi ciekawie" / "Jak to działa?"</span>
+            <ChevronRight />
+          </button>
+          <button
+            onClick={() => goToStage('objection-price', 'Obiekcja: To za drogie')}
+            className="w-full p-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center justify-between"
+          >
+            <span>💰 "To za drogie"</span>
+            <ChevronRight />
+          </button>
+          <button
+            onClick={() => goToStage('objection-belief', 'Obiekcja: Nie wierzę w oszczędności')}
+            className="w-full p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center justify-between"
+          >
+            <span>❌ "Nie wierzę w te oszczędności"</span>
+            <ChevronRight />
+          </button>
+          <button
+            onClick={() => goToStage('objection-think', 'Obiekcja: Muszę pomyśleć')}
+            className="w-full p-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center justify-between"
+          >
+            <span>🤔 "Muszę pomyśleć"</span>
+            <ChevronRight />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const ObjectionScreen = ({ type }) => {
+    const objections = {
+      'objection-time': {
+        title: 'Obiekcja: "Nie mam czasu"',
+        responses: [
+          {
+            label: 'ODPOWIEDŹ #1: Konkretne opcje',
+            text: '"Rozumiem! Kiedy byłby lepszy moment? Mogę zadzwonić dziś wieczorem o 19:00 lub jutro rano o 10:00?"',
+            tip: 'Zawsze daj konkretne opcje czasu, nie pytaj "kiedy"'
+          },
+          {
+            label: 'ODPOWIEDŹ #2: 60 sekund',
+            text: '"Rozumiem. Zajmę Panu/Pani dosłownie 60 sekund, żeby powiedzieć o czym to jest. Jeśli uzna Pan/Pani że to bez sensu - się rozłączymy. Zgoda?"',
+            tip: 'Jeśli zgodzi się - bardzo skrócona wersja haka'
+          }
+        ],
+        actions: ['Umów konkretny termin', 'Daj 60-sekundowy pitch', 'Podziękuj i zakończ']
+      },
+      'objection-interest': {
+        title: 'Obiekcja: "Nie interesuje mnie to"',
+        responses: [
+          {
+            label: 'ODPOWIEDŹ: Reframing',
+            text: '"Rozumiem. Mogę zapytać - co konkretnie Pana/Panią nie interesuje? Oszczędności na rachunkach czy poprawa jakości powietrza?"',
+            tip: 'Klient prawie zawsze odpowie - to otwiera na rozmowę'
+          }
+        ],
+        actions: ['Słuchaj odpowiedzi', 'Adresuj konkretny punkt', 'Jeśli dalej nie - grzecznie zakończ']
+      },
+      'objection-price': {
+        title: 'Obiekcja: "To za drogie"',
+        responses: [
+          {
+            label: 'ODPOWIEDŹ #1: Feel-Felt-Found',
+            text: `"Rozumiem to uczucie. Wielu naszych klientów czuło to samo na początku. Ale kiedy pokazałem im, że płacą ${clientData.monthlyBill || 'X'} złotych miesięcznie, czyli ${(clientData.monthlyBill || 0) * 12} rocznie, i że system zaoszczędzi ${Math.round(calculations.annualSavings) || 'Y'} rocznie - zrozumieli, że to nie wydatek, to inwestycja która się spłaca."`,
+            tip: 'Technika "Czuję-Czuł-Znalazł" buduje empatię'
+          },
+          {
+            label: 'ODPOWIEDŹ #2: Rozbicie na małe kwoty',
+            text: `"Rozumiem. To ${calculations.totalKomfort ? calculations.totalKomfort.toFixed(0) : 'X'} zł na 20 lat. To ${calculations.totalKomfort ? Math.round(calculations.totalKomfort / 20 / 12) : 'Y'} zł miesięcznie. Mniej niż koszt kawy na wynos każdego dnia. A oszczędności? ${Math.round(calculations.savings) || 'Z'} zł miesięcznie. System płaci za siebie!"`,
+            tip: 'Rozbij dużą kwotę na małe, miesięczne'
+          },
+          {
+            label: 'ODPOWIEDŹ #3: Kredyt',
+            text: `"Rozumiem. Dlatego mamy kredyt w Alior Bank - rata około ${Math.round(calculations.totalKomfort / 60) || '200'} zł miesięcznie przez 5 lat. Oszczędza Pan/Pani ${Math.round(calculations.savings) || '150'} zł, płaci ratę ${Math.round(calculations.totalKomfort / 60) || '200'} = realny koszt ${Math.round((calculations.totalKomfort / 60) - calculations.savings) || '50'} zł miesięcznie. Czy zdrowie jest warte ${Math.round((calculations.totalKomfort / 60) - calculations.savings) || '50'} zł?"`,
+            tip: 'Pokaz że rata < oszczędności'
+          }
+        ],
+        actions: ['Przejdź do zamknięcia', 'Zaproponuj spotkanie', 'Wyślij kalkulację mailowo']
+      },
+      'objection-belief': {
+        title: 'Obiekcja: "Nie wierzę w oszczędności"',
+        responses: [
+          {
+            label: 'ODPOWIEDŹ: Dowody',
+            text: '"Rozumiem sceptycyzm! Gdybym był na Pana/Pani miejscu, też bym miał wątpliwości. Dlatego nie proszę żeby mi Pan/Pani wierzył na słowo. Mam konkretne dane: Audyt państwa Kowalskich - przed: 680 zł/mc, po: 470 zł/mc. Certyfikat TÜV NORD dla farby - niezależne badania +2°C. Plus gwarancja efektywności - jeśli oszczędności <20%, zwracamy różnicę."',
+            tip: 'Konkretne liczby + dowody + gwarancja'
+          }
+        ],
+        actions: ['Zaproponuj darmową diagnozę', 'Pokaż certyfikaty', 'Przejdź do zamknięcia']
+      },
+      'objection-think': {
+        title: 'Obiekcja: "Muszę pomyśleć"',
+        responses: [
+          {
+            label: 'ODPOWIEDŹ #1: Odkryj prawdziwą obiekcję',
+            text: '"Oczywiście, to całkowicie zrozumiałe! Ale pozwoli Pan/Pani na jedno pytanie - zazwyczaj gdy ktoś mówi \'muszę pomyśleć\', to znaczy że coś go niepokoi. Czy to kwestia ceny, czy może wątpliwości czy to działa, czy coś innego?"',
+            tip: 'MILCZ i słuchaj. Klient ujawni prawdziwą obiekcję'
+          },
+          {
+            label: 'ODPOWIEDŹ #2: Umów spotkanie',
+            text: '"Świetnie! Zastanowienie to mądra decyzja. Powiem tak - mam jeszcze kilka wolnych terminów w tym tygodniu. Mogę zarezerwować spotkanie diagnostyczne - jutro o 16:00 lub piątek o 10:00. Zobaczy Pan/Pani dokładne wyliczenia, i wtedy w spokoju podejmie decyzję. Który termin bardziej pasuje?"',
+            tip: 'Alternatywne zamknięcie: A czy B, nie tak/nie'
+          }
+        ],
+        actions: ['Odkryj prawdziwą obiekcję', 'Umów spotkanie', 'Wyślij materiały + follow-up']
+      }
+    };
+
+    const objection = objections[type] || objections['objection-time'];
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-orange-600">{objection.title}</h3>
+          <AlertCircle className="text-orange-500" size={32} />
+        </div>
+
+        <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
+          <p className="font-semibold mb-2">⚠️ PAMIĘTAJ:</p>
+          <p className="text-sm">Obiekcje to normalne! Nie oznaczają "nie" - oznaczają "potrzebuję więcej informacji".</p>
+        </div>
+
+        {objection.responses.map((response, idx) => (
+          <div key={idx} className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <p className="font-semibold mb-2">{response.label}</p>
+            <div className="bg-white p-4 rounded border border-green-200 mb-2">
+              <p className="leading-relaxed">{response.text}</p>
+            </div>
+            <div className="bg-yellow-50 p-2 rounded text-sm">
+              💡 <strong>Wskazówka:</strong> {response.tip}
+            </div>
+          </div>
+        ))}
+
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+          <p className="font-semibold mb-2">📋 MOŻLIWE AKCJE:</p>
+          <ul className="text-sm space-y-1">
+            {objection.actions.map((action, idx) => (
+              <li key={idx}>• {action}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => goToStage('closing', 'Obiekcja obsłużona - przejście do zamknięcia')}
+            className="p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+          >
+            ✅ Obsłużone - Do Zamknięcia
+          </button>
+          <button
+            onClick={() => goToStage('presentation', 'Powrót do prezentacji')}
+            className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          >
+            🔄 Wróć do Prezentacji
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const ClosingScreen = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-2xl font-bold text-green-600">6. Zamknięcie</h3>
+        <Target className="text-green-500" size={32} />
+      </div>
+
+      <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+        <p className="font-semibold mb-2">🎯 CEL:</p>
+        <p className="text-sm">Umówić spotkanie diagnostyczne lub wysłać materiały z konkretnym follow-up</p>
+      </div>
+
+      <div className="space-y-4">
+        <div className="bg-white border-2 border-green-300 rounded-lg p-4">
+          <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
+            <CheckCircle className="text-green-500" />
+            ZAMKNIĘCIE #1: Twarde (klient gorący)
+          </h4>
+          <div className="bg-green-50 p-3 rounded mb-3">
+            <p className="leading-relaxed">
+              <strong>"Świetnie! Widzę że system Zdrowe Mieszkanie+ mógłby być idealny dla Państwa. Następny krok to darmowe spotkanie diagnostyczne - nasz konsultant przyjdzie z kamerą termowizyjną, zmierzymy dokładnie straty energii i przygotujemy spersonalizowaną ofertę."</strong>
+              <br /><br />
+              <strong>"Mam wolne terminy jutro o 16:00 lub w piątek o 10:00. Który termin bardziej Państwu pasuje?"</strong>
+            </p>
+          </div>
+          <div className="bg-yellow-50 p-2 rounded text-sm">
+            💡 Nie pytaj "czy chce Pan spotkanie" - zakładaj że chce. Daj wybór między A a B!
+          </div>
+        </div>
+
+        <div className="bg-white border-2 border-blue-300 rounded-lg p-4">
+          <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
+            <MessageSquare className="text-blue-500" />
+            ZAMKNIĘCIE #2: Miękkie (klient ostrożny)
+          </h4>
+          <div className="bg-blue-50 p-3 rounded mb-3">
+            <p className="leading-relaxed">
+              <strong>"Rozumiem, to duża decyzja. Zróbmy tak:"</strong>
+              <br /><br />
+              • Krok 1 - Wyślę Państwu mailowo kalkulator z wyliczeniami dla Państwa {clientData.propertyType} {clientData.area}m²
+              <br />
+              • Krok 2 - Zadzwonię za 2-3 dni, odpowiem na pytania
+              <br />
+              • Krok 3 - Jeśli uznacie że ma sens - umówimy spotkanie
+              <br /><br />
+              <strong>"Brzmi dobrze? Jaki jest Państwa adres email?"</strong>
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white border-2 border-gray-300 rounded-lg p-4">
+          <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
+            <Clock className="text-gray-500" />
+            ZAMKNIĘCIE #3: Awaryjne (klient zimny)
+          </h4>
+          <div className="bg-gray-50 p-3 rounded mb-3">
+            <p className="leading-relaxed">
+              <strong>"Rozumiem, to nie jest dobry moment. Nie ma sprawy."</strong>
+              <br /><br />
+              <strong>"Zapisze Pan/Pani mój numer? +48 502 963 879. Jeśli kiedyś pojawią się problemy z wilgocią, wysokimi rachunkami lub jakością powietrza - zadzwońcie. Pomogę bez zobowiązań."</strong>
+              <br /><br />
+              <strong>"Mogę zadzwonić za 3-6 miesięcy, żeby sprawdzić czy sytuacja się zmieniła? Tylko przypomnienie, zero presji."</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-6 rounded-lg">
+        <h4 className="font-bold text-xl mb-3">📝 PO ROZMOWIE - CHECKLIST:</h4>
+        <div className="space-y-2 text-sm">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="w-4 h-4" />
+            <span>Zanotuj wynik w CRM</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="w-4 h-4" />
+            <span>Wyślij SMS/email z potwierdzeniem (jeśli umówiono spotkanie)</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="w-4 h-4" />
+            <span>Zaplanuj follow-up (2-7 dni)</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="w-4 h-4" />
+            <span>Przeanalizuj co zadziałało / co poprawić</span>
+          </label>
+        </div>
+      </div>
+
+      <button
+        onClick={() => {
+          if (window.confirm('Czy chcesz rozpocząć nową rozmowę? Obecne dane zostaną utracone.')) {
+            setStage('start');
+            setClientData({ name: '', propertyType: '', area: '', monthlyBill: '', problems: [] });
+            setNotes('');
+            setHistory([]);
+            addToHistory('Rozpoczęto nową rozmowę');
+          }
+        }}
+        className="w-full p-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition flex items-center justify-center gap-2 text-lg font-bold"
+      >
+        <RefreshCw size={24} />
+        Rozpocznij Nową Rozmowę
+      </button>
+    </div>
+  );
+
+  // RENDER
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Phone className="text-green-600" size={32} />
+              <div>
+                <h1 className="text-2xl font-bold">Interaktywny Skrypt Rozmowy</h1>
+                <p className="text-gray-600 text-sm">Zdrowe Mieszkanie+ by 4-eco</p>
+              </div>
+            </div>
+            {clientData.name && (
+              <div className="text-right">
+                <div className="text-sm text-gray-600">Klient:</div>
+                <div className="font-bold">{clientData.name || 'Brak danych'}</div>
+              </div>
+            )}
+          </div>
+
+          {/* Progress bar */}
+          {stage !== 'start' && (
+            <div className="flex items-center gap-2 text-xs">
+              <div className={`px-2 py-1 rounded ${['profile', 'opening', 'qualification', 'presentation', 'closing'].includes(stage) || stage.includes('objection') ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
+                Profil
+              </div>
+              <ChevronRight size={16} className="text-gray-400" />
+              <div className={`px-2 py-1 rounded ${['opening', 'qualification', 'presentation', 'closing'].includes(stage) || stage.includes('objection') ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
+                Otwarcie
+              </div>
+              <ChevronRight size={16} className="text-gray-400" />
+              <div className={`px-2 py-1 rounded ${['qualification', 'presentation', 'closing'].includes(stage) || stage.includes('objection') ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
+                Kwalifikacja
+              </div>
+              <ChevronRight size={16} className="text-gray-400" />
+              <div className={`px-2 py-1 rounded ${['presentation', 'closing'].includes(stage) || stage.includes('objection') ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
+                Prezentacja
+              </div>
+              <ChevronRight size={16} className="text-gray-400" />
+              <div className={`px-2 py-1 rounded ${stage === 'closing' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
+                Zamknięcie
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          {stage === 'start' && <StartScreen />}
+          {stage === 'profile' && <ProfileScreen />}
+          {stage === 'opening' && <OpeningScreen />}
+          {stage === 'qualification' && <QualificationScreen />}
+          {stage === 'presentation' && <PresentationScreen />}
+          {stage.includes('objection') && <ObjectionScreen type={stage} />}
+          {stage === 'closing' && <ClosingScreen />}
+        </div>
+
+        {/* Notes & History Sidebar */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-lg p-4">
+            <h3 className="font-bold mb-3 flex items-center gap-2">
+              <MessageSquare size={20} />
+              Notatki
+            </h3>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Zapisuj ważne informacje z rozmowy..."
+              className="w-full h-32 p-3 border rounded-lg resize-none text-sm"
+            />
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg p-4">
+            <h3 className="font-bold mb-3 flex items-center gap-2">
+              <Clock size={20} />
+              Historia Rozmowy
+            </h3>
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {history.length === 0 ? (
+                <p className="text-sm text-gray-400">Brak historii</p>
+              ) : (
+                history.map((item, idx) => (
+                  <div key={idx} className="text-xs bg-gray-50 p-2 rounded">
+                    <span className="text-gray-500">{item.time}</span> - {item.action}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 text-center text-sm text-gray-600">
+          <p>📧 seweryn.kolodziej@4-eco.pl | 📱 +48 502 963 879 | 🌐 www.4-eco.pl</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InteractiveCallScript;
