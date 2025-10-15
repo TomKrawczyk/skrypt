@@ -1,0 +1,2 @@
+# skrypt
+skrypt rozmowy inteaktywnej
