@@ -7,551 +7,209 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: linear-gradient(to bottom right, #eff6ff, #f0fdf4, #ecfdf5); }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 24px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .progress { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 20px; }
-        .step { padding: 4px 8px; border-radius: 20px; background: #e5e7eb; color: #6b7280; }
-        .step.active { background: #10b981; color: white; }
-        .button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; margin-top: 8px; }
-        .button.primary { background: #10b981; color: white; }
-        .button.primary:hover { background: #059669; }
-        .button.secondary { background: #6b7280; color: white; }
-        .button.secondary:hover { background: #4b5563; }
-        .button.danger { background: #ef4444; color: white; }
-        .button.danger:hover { background: #dc2626; }
-        .input { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 12px; }
-        .checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .tip { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 6px; margin: 12px 0; }
-        .script { background: #f3f4f6; padding: 16px; border-radius: 6px; margin: 12px 0; font-style: italic; }
-        .history { max-height: 200px; overflow-y: auto; background: #f9fafb; padding: 12px; border-radius: 6px; }
-        .history-item { font-size: 12px; margin-bottom: 4px; color: #6b7280; }
-        .notes { height: 120px; resize: vertical; }
-        .icon { width: 20px; height: 20px; }
-        .text-center { text-align: center; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .font-bold { font-weight: bold; }
-        .text-3xl { font-size: 2rem; }
-        .text-gray-600 { color: #6b7280; }
-        .text-sm { font-size: 0.875rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .p-4 { padding: 1rem; }
-        .rounded-full { border-radius: 9999px; }
-        .inline { display: inline; }
-        .text-red-600 { color: #ef4444; }
-        .text-green-600 { color: #10b981; }
-        .text-blue-600 { color: #3b82f6; }
-        .text-gray-400 { color: #9ca3af; }
-        .text-gray-100 { background: #f3f4f6; }
-        .w-4 { width: 1rem; }
-        .h-4 { height: 1rem; }
-        .w-5 { width: 1.25rem; }
-        .h-5 { height: 1.25rem; }
+        body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fa; }
+        .container { max-width: 600px; margin: 40px auto; padding: 16px; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 20px; }
+        .header { margin-bottom: 12px; }
+        .button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; margin: 8px 0; background: #10b981; color: white; font-weight: bold; }
+        .button.secondary { background: #888;}
+        .input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px;}
+        .tip { background: #fffbe5; border-left: 3px solid #ffd700; padding: 10px; margin: 10px 0; border-radius: 6px; font-size: 0.9em; }
+        .history { background: #f3f3f7; padding: 8px; border-radius: 5px; font-size: 0.95em; margin-top: 10px;}
+        .history-item { color: #555; margin-bottom: 2px; }
+        textarea { width: 100%; border-radius: 5px; border: 1px solid #ddd; padding: 8px; margin-bottom: 10px;}
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        function InteractiveCallScript() {
-            const [stage, setStage] = React.useState('start');
-            const [subStage, setSubStage] = React.useState('');
-            const [contactType, setContactType] = React.useState('');
-            const [clientProfile, setClientProfile] = React.useState('');
-            const [notes, setNotes] = React.useState('');
-            const [clientData, setClientData] = React.useState({
-                name: '', propertyType: '', area: '', monthlyBill: '', problems: []
-            });
-            const [history, setHistory] = React.useState([]);
-            const [showCalculator, setShowCalculator] = React.useState(false);
+<div id="root"></div>
+<script type="text/babel">
 
-            const calculations = React.useMemo(function() {
-                const area = parseFloat(clientData.area) || 0;
-                const bill = parseFloat(clientData.monthlyBill) || 0;
-                const rekuperatorCount = area <= 80 ? 1 : area <= 120 ? 2 : area <= 180 ? 3 : 4;
-                const rekuperatorCost = 2800 + (rekuperatorCount - 1) * 3200;
-                const pscLiters = area * 0.33;
-                const pscCost = pscLiters * 110;
-                const totalKomfort = rekuperatorCost + pscCost + 2000;
-                const savings = bill * 0.3;
-                const annualSavings = savings * 12;
-                const roi = totalKomfort / annualSavings || 0;
-                return { rekuperatorCount, rekuperatorCost, pscCost, totalKomfort, savings, annualSavings, roi, pscLiters };
-            }, [clientData.area, clientData.monthlyBill]);
+function SkryptRozmowy() {
+  const [etap, setEtap] = React.useState('start');
+  const [profil, setProfil] = React.useState('');
+  const [notatki, setNotatki] = React.useState('');
+  const [klient, setKlient] = React.useState({ imie: '', typ: '', metraz: '', rachunek: '', problemy: [] });
+  const [historia, setHistoria] = React.useState([]);
 
-            function addToHistory(action) {
-                setHistory(function(prev) {
-                    return prev.concat([{ time: new Date().toLocaleTimeString(), action: action }]);
+  function dodajDoHistorii(tekst) {
+    setHistoria(h => h.concat([{ czas: new Date().toLocaleTimeString(), tekst }]));
+  }
+
+  function przejdzDoEtapu(nowy, akcja) {
+    setEtap(nowy);
+    if (akcja) dodajDoHistorii(akcja);
+  }
+
+  function Start() {
+    return (
+      <div className="card">
+        <div className="header">
+          <h2>Zdrowe Mieszkanie+</h2>
+          <div className="tip">
+            <strong>Cel rozmowy:</strong>
+            <ul>
+              <li>Umówić spotkanie diagnostyczne</li>
+              <li>Zamknięcie sprzedaży</li>
+              <li>Pozostawić kontakt na przyszłość</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div style={{marginBottom:8}}>Typ kontaktu:</div>
+          <button className="button secondary" onClick={() => przejdzDoEtapu('profil', 'Wybrano kontakt ciepły')}>Ciepły</button>
+          <button className="button secondary" onClick={() => przejdzDoEtapu('profil', 'Wybrano kontakt zimny')}>Zimny</button>
+        </div>
+      </div>
+    );
+  }
+
+  function Profil() {
+    return (
+      <div className="card">
+        <h3>Profil Klienta</h3>
+        <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
+          <button className="button secondary" style={{flex:1}}
+            onClick={()=>{ setProfil('rodzina'); przejdzDoEtapu('imie', 'Profil: Rodzina'); }}>
+            Rodzina
+          </button>
+          <button className="button secondary" style={{flex:1}}
+            onClick={()=>{ setProfil('senior'); przejdzDoEtapu('imie', 'Profil: Senior'); }}>
+            Senior
+          </button>
+          <button className="button secondary" style={{flex:1}}
+            onClick={()=>{ setProfil('eko'); przejdzDoEtapu('imie', 'Profil: Eko'); }}>
+            Eko
+          </button>
+          <button className="button secondary" style={{flex:1}}
+            onClick={()=>{ setProfil('sceptyk'); przejdzDoEtapu('imie', 'Profil: Sceptyk'); }}>
+            Sceptyk
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function Imie() {
+    return (
+      <div className="card">
+        <h3>Imię i nazwisko</h3>
+        <input className="input" placeholder="Imię i nazwisko"
+          value={klient.imie} onChange={e => setKlient({...klient, imie:e.target.value})} />
+        <button className="button" onClick={()=>przejdzDoEtapu('typ', 'Podał imię')}>Dalej</button>
+      </div>
+    );
+  }
+
+  function Typ() {
+    return (
+      <div className="card">
+        <h3>Typ nieruchomości</h3>
+        <button className="button secondary" style={{marginRight:8}}
+          onClick={()=>setKlient({...klient, typ:'mieszkanie'})}>
+          Mieszkanie
+        </button>
+        <button className="button secondary"
+          onClick={()=>setKlient({...klient, typ:'dom'})}>
+          Dom
+        </button>
+        <button className="button" disabled={!klient.typ} onClick={()=>przejdzDoEtapu('metraz', 'Podał typ')}>Dalej</button>
+      </div>
+    );
+  }
+
+  function Metraz() {
+    return (
+      <div className="card">
+        <h3>Powierzchnia</h3>
+        <input className="input" type="number" placeholder="Metraż w m²"
+          value={klient.metraz} onChange={e => setKlient({...klient, metraz:e.target.value})} />
+        <button className="button" disabled={!klient.metraz} onClick={()=>przejdzDoEtapu('rachunek', 'Podał metraż')}>Dalej</button>
+      </div>
+    );
+  }
+
+  function Rachunek() {
+    return (
+      <div className="card">
+        <h3>Rachunki</h3>
+        <input className="input" type="number" placeholder="Rachunek za ogrzewanie"
+          value={klient.rachunek} onChange={e => setKlient({...klient, rachunek:e.target.value})} />
+        <button className="button" disabled={!klient.rachunek} onClick={()=>przejdzDoEtapu('problemy', 'Podał rachunek')}>Dalej</button>
+      </div>
+    );
+  }
+
+  function Problemy() {
+    const lista = ['Wysokie rachunki', 'Wilgoć', 'Zapachy', 'Alergie'];
+    return (
+      <div className="card">
+        <h3>Problemy</h3>
+        {lista.map(p =>
+          <label key={p} style={{display:'block',marginBottom:4}}>
+            <input type="checkbox" checked={klient.problemy.indexOf(p)!==-1}
+              onChange={e=>{
+                setKlient({
+                  ...klient,
+                  problemy: e.target.checked ?
+                    klient.problemy.concat(p):
+                    klient.problemy.filter(x=>x!==p)
                 });
-            }
+              }} /> {p}
+          </label>
+        )}
+        <button className="button" disabled={klient.problemy.length===0}
+          onClick={()=>przejdzDoEtapu('podsumowanie', 'Zaznaczył problemy')}>Dalej</button>
+      </div>
+    );
+  }
 
-            function goToStage(newStage, sub, action) {
-                setStage(newStage);
-                setSubStage(sub);
-                if (action) addToHistory(action);
-            }
+  function Podsumowanie() {
+    return (
+      <div className="card">
+        <h3>Podsumowanie</h3>
+        <div><strong>Imię:</strong> {klient.imie}</div>
+        <div><strong>Typ:</strong> {klient.typ}</div>
+        <div><strong>Metraż:</strong> {klient.metraz} m²</div>
+        <div><strong>Rachunek:</strong> {klient.rachunek} zł</div>
+        <div><strong>Problemy:</strong> {klient.problemy.join(', ')}</div>
+        <div className="tip">
+          Zaproponuj spotkanie lub wyślij ofertę!
+        </div>
+        <button className="button" onClick={()=>przejdzDoEtapu('start', 'Nowa rozmowa')}>Nowa rozmowa</button>
+      </div>
+    );
+  }
 
-            // Ikony z lucide (obsługa bez destrukturyzacji)
-            const Phone = lucide.Phone;
-            const ChevronRight = lucide.ChevronRight;
-            const Calculator = lucide.Calculator;
-            const AlertCircle = lucide.AlertCircle;
-            const CheckCircle = lucide.CheckCircle;
-            const RefreshCw = lucide.RefreshCw;
-            const MessageSquare = lucide.MessageSquare;
-            const Clock = lucide.Clock;
-            const Target = lucide.Target;
-            const DollarSign = lucide.DollarSign;
-            const User = lucide.User;
+  return (
+    <div className="container">
+      <div className="card">
+        <div className="header">
+          <h2>Interaktywny Skrypt</h2>
+          <div style={{fontSize:'0.95em', color:'#666'}}>Zdrowe Mieszkanie+</div>
+        </div>
+      </div>
+      {etap==='start' && <Start/>}
+      {etap==='profil' && <Profil/>}
+      {etap==='imie' && <Imie/>}
+      {etap==='typ' && <Typ/>}
+      {etap==='metraz' && <Metraz/>}
+      {etap==='rachunek' && <Rachunek/>}
+      {etap==='problemy' && <Problemy/>}
+      {etap==='podsumowanie' && <Podsumowanie/>}
+      <div className="card">
+        <div><strong>Notatki:</strong></div>
+        <textarea value={notatki} onChange={e=>setNotatki(e.target.value)} placeholder="Notatki..." />
+        <div><strong>Historia:</strong></div>
+        <div className="history">
+          {historia.map((h,i)=><div className="history-item" key={i}>{h.czas} – {h.tekst}</div>)}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-            function StartScreen() {
-                return (
-                    <div className="card">
-                        <div className="text-center">
-                            <Phone style={{ width: '64px', height: '64px', color: '#10b981', display: 'block', margin: '0 auto 1rem auto' }} />
-                            <h2 className="text-3xl font-bold mb-2">Zdrowe Mieszkanie+</h2>
-                            <p className="text-gray-600">Interaktywny Skrypt Rozmowy</p>
-                        </div>
-                        <div className="tip">
-                            <p><strong>🎯 Cel rozmowy:</strong></p>
-                            <ul>
-                                <li>✅ Główny: Umówić spotkanie diagnostyczne</li>
-                                <li>✅ Idealny: Bezpośrednie zamknięcie sprzedaży</li>
-                                <li>✅ Minimalny: Pozostawić kontakt na przyszłość</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <label className="font-semibold mb-2">1. Typ kontaktu:</label>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                                <button onClick={function() { setContactType('warm'); goToStage('profile', '', 'Wybrano kontakt ciepły'); }} className="button secondary">
-                                    ☀️ Ciepły
-                                </button>
-                                <button onClick={function() { setContactType('cold'); goToStage('profile', '', 'Wybrano kontakt zimny'); }} className="button secondary">
-                                    ❄️ Zimny
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            function ProfileScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">2. Profil Klienta</h3>
-                        <p className="text-gray-600 mb-4">Wybierz typ klienta (możesz zmienić później):</p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            <button onClick={function() { setClientProfile('family'); goToStage('opening-warm', '', 'Profil: Młoda rodzina'); }} className="button secondary p-4" style={{ flex: 1 }}>
-                                <div className="font-semibold mb-2">👨‍👩‍👧‍👦 Młoda Rodzina</div>
-                                <div className="text-sm text-gray-600">Dzieci z alergią, wilgoć, zapachy</div>
-                            </button>
-                            <button onClick={function() { setClientProfile('senior'); goToStage('opening-warm', '', 'Profil: Senior'); }} className="button secondary p-4" style={{ flex: 1 }}>
-                                <div className="font-semibold mb-2">👴 Senior</div>
-                                <div className="text-sm text-gray-600">Wysokie rachunki, emerytura</div>
-                            </button>
-                            <button onClick={function() { setClientProfile('eco'); goToStage('opening-warm', '', 'Profil: Świadomy ekologicznie'); }} className="button secondary p-4" style={{ flex: 1 }}>
-                                <div className="font-semibold mb-2">🌱 Świadomy Ekologicznie</div>
-                                <div className="text-sm text-gray-600">Ekologia, wartość nieruchomości</div>
-                            </button>
-                            <button onClick={function() { setClientProfile('skeptic'); goToStage('opening-warm', '', 'Profil: Sceptyk'); }} className="button secondary p-4" style={{ flex: 1 }}>
-                                <div className="font-semibold mb-2">🤔 Sceptyk</div>
-                                <div className="text-sm text-gray-600">Nie wierzy w obietnice</div>
-                            </button>
-                        </div>
-                    </div>
-                );
-            }
-
-            function OpeningWarmScreen() {
-                const hooks = {
-                    family: "Pomagamy rodzinom pozbyć się problemu z wilgocią, pleśnią i alergenami - szczególnie ważne dla dzieci z alergią.",
-                    senior: "Pomagamy obniżyć rachunki za ogrzewanie nawet o 30% - to średnio 2000-3000 zł oszczędności rocznie.",
-                    eco: "Pomagamy zmniejszyć ślad węglowy domu i zwiększyć jego wartość rynkową o 10-15%.",
-                    skeptic: "Realizujemy właśnie projekty termomodernizacyjne w Państwa okolicy z gwarancją efektywności na piśmie."
-                };
-                return (
-                    <div className="card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 className="text-2xl font-bold">3a. Otwarcie - Ciepły Kontakt</h3>
-                            <span className="text-sm text-gray-100 px-3 py-1 rounded-full">⏱️ 10s</span>
-                        </div>
-                        <div className="script">
-                            <strong>"Dzień dobry, nazywam się [Twoje Imię] z firmy 4-eco. Dzwonię w sprawie programu Zdrowe Mieszkanie Plus. Czy to dobry moment na krótką rozmowę?"</strong>
-                            <br /><br />[PAUZA] {hooks[clientProfile]}
-                        </div>
-                        <div className="tip">
-                            <ul>
-                                <li>• Uśmiechnij się - słychać to!</li>
-                                <li>• Poczekaj na odpowiedź</li>
-                            </ul>
-                        </div>
-                        <button onClick={function() { goToStage('qualification-name', '', 'Klient zgodził się'); }} className="button primary">✅ "Ok, mów"</button>
-                        <button onClick={function() { goToStage('objection-time', '', 'Obiekcja: Nie mam czasu'); }} className="button danger">⏰ "Nie mam czasu"</button>
-                        <button onClick={function() { goToStage('objection-interest', '', 'Obiekcja: Nie interesuje'); }} className="button danger">❌ "Nie interesuje mnie"</button>
-                    </div>
-                );
-            }
-
-            function OpeningColdScreen() {
-                const hooks = {
-                    family: "Pomagamy rodzinom pozbyć się problemu z wilgocią, pleśnią i alergenami - szczególnie ważne dla dzieci z alergią.",
-                    senior: "Pomagamy obniżyć rachunki za ogrzewanie nawet o 30% - to średnio 2000-3000 zł oszczędności rocznie.",
-                    eco: "Pomagamy zmniejszyć ślad węglowy domu i zwiększyć jego wartość rynkową o 10-15%.",
-                    skeptic: "Realizujemy właśnie projekty termomodernizacyjne w Państwa okolicy z gwarancją efektywności na piśmie."
-                };
-                return (
-                    <div className="card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 className="text-2xl font-bold">3b. Otwarcie - Zimny Kontakt</h3>
-                            <span className="text-sm text-gray-100 px-3 py-1 rounded-full">⏱️ 15s</span>
-                        </div>
-                        <div className="script">
-                            <strong>"Dzień dobry, mówi [Twoje Imię] z firmy 4-eco. Czy rozmawiam z Panem/Panią [Nazwisko]?"</strong>
-                            <br /><br />[Potwierdzenie] <strong>"Świetnie! Dzwonię, ponieważ aktualnie realizujemy w Państwa rejonie program Zdrowe Mieszkanie Plus. {hooks[clientProfile]} Czy to dobry moment na krótką rozmowę?"</strong>
-                        </div>
-                        <div className="tip">
-                            <ul>
-                                <li>• Bądź entuzjastyczny</li>
-                                <li>• Jeśli "nie" - obsługuj obiekcję</li>
-                            </ul>
-                        </div>
-                        <button onClick={function() { goToStage('qualification-name', '', 'Klient zgodził się'); }} className="button primary">✅ "Tak, słucham"</button>
-                        <button onClick={function() { goToStage('objection-time', '', 'Obiekcja: Nie mam czasu'); }} className="button danger">⏰ "Nie mam czasu"</button>
-                        <button onClick={function() { goToStage('objection-interest', '', 'Obiekcja: Nie interesuje'); }} className="button danger">❌ "Nie interesuje mnie"</button>
-                    </div>
-                );
-            }
-
-            function QualificationNameScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">4a. Kwalifikacja - Imię i Nazwisko</h3>
-                        <p className="mb-4">💬 ZAPYTAJ: "Jak mam się do Pana/Pani zwracać?"</p>
-                        <input type="text" placeholder="Imię i nazwisko" value={clientData.name} onChange={function(e){ setClientData({...clientData, name: e.target.value}); }} className="input" />
-                        <button onClick={function(){ goToStage('qualification-property', '', 'Zbierzono imię'); }} className="button primary">Dalej: Typ nieruchomości</button>
-                    </div>
-                );
-            }
-
-            function QualificationPropertyScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">4b. Kwalifikacja - Typ Nieruchomości</h3>
-                        <p className="mb-4">💬 ZAPYTAJ: "Mieszkacie Państwo w mieszkaniu czy w domu jednorodzinnym?"</p>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={function() { setClientData({...clientData, propertyType: 'mieszkanie'}); }} className={"button " + (clientData.propertyType === 'mieszkanie' ? 'primary' : 'secondary')}>
-                                🏢 Mieszkanie
-                            </button>
-                            <button onClick={function() { setClientData({...clientData, propertyType: 'dom'}); }} className={"button " + (clientData.propertyType === 'dom' ? 'primary' : 'secondary')}>
-                                🏠 Dom
-                            </button>
-                        </div>
-                        {clientData.propertyType === 'dom' && <div className="tip">✅ Dom = ulga termomodernizacyjna do 7300 zł!</div>}
-                        <button onClick={function() { goToStage('qualification-area', '', 'Zbierzono typ'); }} className="button primary" disabled={!clientData.propertyType}>Dalej: Powierzchnia</button>
-                    </div>
-                );
-            }
-
-            function QualificationAreaScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">4c. Kwalifikacja - Powierzchnia</h3>
-                        <p className="mb-4">💬 ZAPYTAJ: "Jaka jest mniej więcej powierzchnia?"</p>
-                        <input type="number" placeholder="Powierzchnia w m²" value={clientData.area} onChange={function(e) { setClientData({...clientData, area: e.target.value}); }} className="input" />
-                        {clientData.area && <div className="tip">💡 "Ok, {clientData.area}m² - to oznacza {calculations.rekuperatorCount} rekuperator{calculations.rekuperatorCount > 1 ? 'y' : ''}."</div>}
-                        <button onClick={function() { goToStage('qualification-bill', '', 'Zbierzono metraż'); }} className="button primary" disabled={!clientData.area}>Dalej: Rachunki</button>
-                    </div>
-                );
-            }
-
-            function QualificationBillScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">4d. Kwalifikacja - Rachunki</h3>
-                        <p className="mb-4">💬 ZAPYTAJ: "Ile mniej więcej płacą Państwo miesięcznie za ogrzewanie i prąd?"</p>
-                        <input type="number" placeholder="Rachunki w zł/miesiąc" value={clientData.monthlyBill} onChange={function(e) { setClientData({...clientData, monthlyBill: e.target.value}); }} className="input" />
-                        {clientData.monthlyBill && <div className="tip">💡 "{clientData.monthlyBill} zł/mc = {Math.round(calculations.savings)} zł oszczędności."</div>}
-                        <button onClick={function() { goToStage('qualification-problems', '', 'Zbierzono rachunki'); }} className="button primary" disabled={!clientData.monthlyBill}>Dalej: Problemy</button>
-                    </div>
-                );
-            }
-
-            function QualificationProblemsScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">4e. Kwalifikacja - Problemy</h3>
-                        <p className="mb-4">💬 ZAPYTAJ: "Czy borykają się Państwo z którymś z tych problemów?"</p>
-                        <div>
-                            {['Wysokie rachunki', 'Wilgoć/pleśń', 'Zapachy/duszność', 'Alergeny', 'Nierównomierna temperatura'].map(function(problem) {
-                                return (
-                                    <label key={problem} className="checkbox">
-                                        <input type="checkbox" checked={clientData.problems.indexOf(problem) !== -1} onChange={function(e) {
-                                            setClientData({...clientData, problems: e.target.checked ? clientData.problems.concat(problem) : clientData.problems.filter(function(p){return p!==problem;})});
-                                        }} />
-                                        <span>{problem}</span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-                        <button onClick={function() { setShowCalculator(true); goToStage('presentation-paint', '', 'Zbierzono problemy'); }} className="button primary" disabled={clientData.problems.length === 0}>Dalej: Prezentacja</button>
-                        {showCalculator && (
-                            <div className="tip">
-                                <h4>Kalkulator:</h4>
-                                <p>Rekuperatory: {calculations.rekuperatorCount} szt. ({calculations.rekuperatorCost.toFixed(0)} zł)</p>
-                                <p>Farba PSC: {calculations.pscLiters.toFixed(0)} L ({calculations.pscCost.toFixed(0)} zł)</p>
-                                <p>Total: {calculations.totalKomfort.toFixed(0)} zł | Oszczędności: {Math.round(calculations.annualSavings)} zł/rok | ROI: {calculations.roi.toFixed(1)} lat</p>
-                            </div>
-                        )}
-                    </div>
-                );
-            }
-
-            function PresentationPaintScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">5a. Prezentacja - Farba PSC</h3>
-                        <div className="script">
-                            <strong>"Pakiet Komfort zaczyna się od farby termoizolacyjnej PSC Interior - ceramiczne mikrosfery odbijają ciepło. Efekt? +2°C bez dodatkowych kosztów."</strong>
-                        </div>
-                        <div className="tip">Podkreśl badania: +2°C potwierdzone.</div>
-                        <button onClick={function() { goToStage('presentation-rekuperator', '', 'Prezentacja farby OK'); }} className="button primary">Dalej: Rekuperatory</button>
-                        <button onClick={function() { goToStage('objection-price', '', 'Obiekcja w farbie'); }} className="button danger">💰 "Za drogo"</button>
-                    </div>
-                );
-            }
-
-            function PresentationRekuperatorScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">5b. Prezentacja - Rekuperatory</h3>
-                        <div className="script">
-                            <strong>{"Następnie " + calculations.rekuperatorCount + " rekuperatorów EasyEko - odzyskują 90% ciepła, filtry HEPA na alergeny."}</strong>
-                        </div>
-                        <div className="tip">Świeże powietrze bez strat.</div>
-                        <button onClick={function() { goToStage('presentation-costs', '', 'Prezentacja rekuperatorów OK'); }} className="button primary">Dalej: Koszty</button>
-                        <button onClick={function() { goToStage('objection-belief', '', 'Obiekcja w rekuperatorach'); }} className="button danger">❌ "Nie wierzę"</button>
-                    </div>
-                );
-            }
-
-            function PresentationCostsScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4">5c. Prezentacja - Koszty i Oszczędności</h3>
-                        <div className="script">
-                            <strong>{"Całość: " + calculations.totalKomfort.toFixed(0) + " zł. Oszczędności: " + Math.round(calculations.savings) + " zł/mc. ROI: " + calculations.roi.toFixed(1) + " lat."}</strong>
-                        </div>
-                        <div className="tip">To inwestycja, nie koszt!</div>
-                        <button onClick={function() { goToStage('closing-hard', '', 'Prezentacja kosztów OK'); }} className="button primary">Do Zamknięcia</button>
-                        <button onClick={function() { goToStage('objection-think', '', 'Obiekcja: Muszę pomyśleć'); }} className="button danger">🤔 "Muszę pomyśleć"</button>
-                    </div>
-                );
-            }
-
-            function ObjectionTimeScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4 text-red-600">Obiekcja: "Nie mam czasu"</h3>
-                        <AlertCircle className="inline" style={{ color: '#ef4444' }} />
-                        <div className="script mt-4">
-                            <strong>ODPOWIEDŹ #1:</strong> "Rozumiem! Kiedy lepszy moment? Dziś o 19:00 czy jutro o 10:00?"
-                            <br /><br />
-                            <strong>ODPOWIEDŹ #2:</strong> "Zajmę 60 sekund. Jeśli bez sensu - rozłączamy się. Zgoda?"
-                        </div>
-                        <div className="tip">Daj konkretne opcje.</div>
-                        <button onClick={function() { goToStage('qualification-name', '', 'Obiekcja czasu obsłużona'); }} className="button primary">✅ Obsłużone - Kontynuuj</button>
-                        <button onClick={function() { goToStage('closing-emergency', '', 'Zakończ rozmowę'); }} className="button danger">❌ Zakończ</button>
-                    </div>
-                );
-            }
-
-            function ObjectionInterestScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4 text-red-600">Obiekcja: "Nie interesuje mnie"</h3>
-                        <AlertCircle className="inline" style={{ color: '#ef4444' }} />
-                        <div className="script mt-4">
-                            <strong>"Co konkretnie nie interesuje? Oszczędności czy powietrze?"</strong>
-                        </div>
-                        <div className="tip">To otwiera rozmowę.</div>
-                        <button onClick={function() { goToStage('qualification-name', '', 'Obiekcja zainteresowania obsłużona'); }} className="button primary">✅ Kontynuuj</button>
-                        <button onClick={function() { goToStage('closing-emergency', '', 'Zakończ'); }} className="button danger">❌ Zakończ</button>
-                    </div>
-                );
-            }
-
-            function ObjectionPriceScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4 text-red-600">Obiekcja: "Za drogo"</h3>
-                        <DollarSign className="inline" style={{ color: '#ef4444' }} />
-                        <div className="script mt-4">
-                            <strong>{"Wielu czuło to samo. Ale " + calculations.annualSavings.toFixed(0) + " zł oszczędności rocznie - to inwestycja."}</strong>
-                            <br /><br />
-                            <strong>{"Rozbij: " + Math.round(calculations.totalKomfort / 240) + " zł/dzień. Mniej niż kawa!"}</strong>
-                        </div>
-                        <div className="tip">Feel-Felt-Found.</div>
-                        <button onClick={function() { goToStage('closing-soft', '', 'Obiekcja ceny obsłużona'); }} className="button primary">✅ Do miękkiego zamknięcia</button>
-                        <button onClick={function() { goToStage('presentation-costs', '', 'Wróć do kosztów'); }} className="button secondary">🔄 Wróć</button>
-                    </div>
-                );
-            }
-
-            function ObjectionBeliefScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4 text-red-600">Obiekcja: "Nie wierzę"</h3>
-                        <AlertCircle className="inline" style={{ color: '#ef4444' }} />
-                        <div className="script mt-4">
-                            <strong>{"Rozumiem! Audyt Kowalskich: 680→470 zł/mc. Certyfikat TÜV + gwarancja."}</strong>
-                        </div>
-                        <div className="tip">Dowody + gwarancja.</div>
-                        <button onClick={function() { goToStage('closing-hard', '', 'Obiekcja wiary obsłużona'); }} className="button primary">✅ Do twardego zamknięcia</button>
-                        <button onClick={function() { goToStage('presentation-rekuperator', '', 'Wróć do rekuperatorów'); }} className="button secondary">🔄 Wróć</button>
-                    </div>
-                );
-            }
-
-            function ObjectionThinkScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4 text-red-600">Obiekcja: "Muszę pomyśleć"</h3>
-                        <AlertCircle className="inline" style={{ color: '#ef4444' }} />
-                        <div className="script mt-4">
-                            <strong>{"Co niepokoi? Cena czy działanie?"}</strong>
-                            <br /><br />
-                            <strong>Albo: "Rezerwuję termin: jutro 16:00 czy piątek 10:00?"</strong>
-                        </div>
-                        <div className="tip">Odkryj prawdziwą obiekcję.</div>
-                        <button onClick={function() { goToStage('objection-price', '', 'Prawdziwa obiekcja: Cena'); }} className="button danger">💰 Cena</button>
-                        <button onClick={function() { goToStage('objection-belief', '', 'Prawdziwa obiekcja: Wiara'); }} className="button danger">❌ Wiara</button>
-                        <button onClick={function() { goToStage('closing-soft', '', 'Umów follow-up'); }} className="button primary">📧 Follow-up</button>
-                    </div>
-                );
-            }
-
-            function ClosingHardScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4 text-green-600">6a. Zamknięcie Twarde</h3>
-                        <Target className="inline" style={{ color: '#10b981' }} />
-                        <div className="script">
-                            <strong>{"Następny krok: darmowa diagnoza z termowizją. Jutro 16:00 czy piątek 10:00?"}</strong>
-                        </div>
-                        <div className="tip">Zakładaj zgodę - wybór A/B.</div>
-                        <button onClick={function() { alert('Umówiono spotkanie!'); }} className="button primary">✅ Umówiono</button>
-                        <button onClick={function() { goToStage('closing-soft', '', 'Przejdź do miękkiego'); }} className="button secondary">🔄 Miękkie</button>
-                    </div>
-                );
-            }
-
-            function ClosingSoftScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4 text-blue-600">6b. Zamknięcie Miękkie</h3>
-                        <MessageSquare className="inline" style={{ color: '#3b82f6' }} />
-                        <div className="script">
-                            <strong>{"Wyślę kalkulację mailowo. Zadzwonię za 2 dni. Adres email?"}</strong>
-                        </div>
-                        <div className="tip">Krok po kroku.</div>
-                        <input type="email" placeholder="Email klienta" className="input" />
-                        <button onClick={function() { alert('Wysłano materiały!'); }} className="button primary">📧 Wysłano</button>
-                    </div>
-                );
-            }
-
-            function ClosingEmergencyScreen() {
-                return (
-                    <div className="card">
-                        <h3 className="text-2xl font-bold mb-4 text-gray-600">6c. Zamknięcie Awaryjne</h3>
-                        <Clock className="inline" style={{ color: '#6b7280' }} />
-                        <div className="script">
-                            <strong>{"Rozumiem. Zapisz numer: +48 502 963 879. Zadzwonię za 3 miesiące?"}</strong>
-                        </div>
-                        <div className="tip">Pozostaw kontakt.</div>
-                        <button onClick={function() { goToStage('start', '', 'Rozmowa zakończona'); }} className="button secondary">🔄 Nowa rozmowa</button>
-                    </div>
-                );
-            }
-
-            function Sidebar() {
-                return (
-                    <div style={{ display: 'grid', gap: '16px' }}>
-                        <div className="card">
-                            <h3 className="font-bold mb-3"><MessageSquare className="inline w-5 h-5" /> Notatki</h3>
-                            <textarea value={notes} onChange={function(e) { setNotes(e.target.value); }} className="input notes" placeholder="Zapisuj notatki..." />
-                        </div>
-                        <div className="card">
-                            <h3 className="font-bold mb-3"><Clock className="inline w-5 h-5" /> Historia</h3>
-                            <div className="history">
-                                {history.map(function(item, idx) { return <div key={idx} className="history-item">{item.time} - {item.action}</div>; })}
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            function renderStage() {
-                var stages = {
-                    start: <StartScreen />,
-                    profile: <ProfileScreen />,
-                    'opening-warm': <OpeningWarmScreen />,
-                    'opening-cold': <OpeningColdScreen />,
-                    'qualification-name': <QualificationNameScreen />,
-                    'qualification-property': <QualificationPropertyScreen />,
-                    'qualification-area': <QualificationAreaScreen />,
-                    'qualification-bill': <QualificationBillScreen />,
-                    'qualification-problems': <QualificationProblemsScreen />,
-                    'presentation-paint': <PresentationPaintScreen />,
-                    'presentation-rekuperator': <PresentationRekuperatorScreen />,
-                    'presentation-costs': <PresentationCostsScreen />,
-                    'objection-time': <ObjectionTimeScreen />,
-                    'objection-interest': <ObjectionInterestScreen />,
-                    'objection-price': <ObjectionPriceScreen />,
-                    'objection-belief': <ObjectionBeliefScreen />,
-                    'objection-think': <ObjectionThinkScreen />,
-                    'closing-hard': <ClosingHardScreen />,
-                    'closing-soft': <ClosingSoftScreen />,
-                    'closing-emergency': <ClosingEmergencyScreen />
-                };
-                return stages[stage] || <StartScreen />;
-            }
-
-            return (
-                <div className="container">
-                    <div className="card">
-                        <div className="header">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <Phone style={{ color: '#10b981' }} />
-                                <div>
-                                    <h1 className="text-2xl font-bold">Interaktywny Skrypt</h1>
-                                    <p className="text-sm text-gray-600">Zdrowe Mieszkanie+ by 4-eco</p>
-                                </div>
-                            </div>
-                            {clientData.name && <div><div className="text-sm text-gray-600">Klient:</div><div className="font-bold">{clientData.name}</div></div>}
-                        </div>
-                        <div className="progress">
-                            <span className={`step ${['profile', 'opening', 'qualification', 'presentation', 'closing', 'objection'].some(function(s){return stage.startsWith(s);}) ? 'active' : ''}`}>Profil</span>
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                            <span className={`step ${['opening', 'qualification', 'presentation', 'closing', 'objection'].some(function(s){return stage.startsWith(s);}) ? 'active' : ''}`}>Otwarcie</span>
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                            <span className={`step ${['qualification', 'presentation', 'closing', 'objection'].some(function(s){return stage.startsWith(s);}) ? 'active' : ''}`}>Kwalifikacja</span>
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                            <span className={`step ${['presentation', 'closing', 'objection'].some(function(s){return stage.startsWith(s);}) ? 'active' : ''}`}>Prezentacja</span>
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                            <span className={`step ${stage.startsWith('closing') ? 'active' : ''}`}>Zamknięcie</span>
-                        </div>
-                    </div>
-                    {renderStage()}
-                    <Sidebar />
-                </div>
-            );
-        }
-
-        ReactDOM.render(<InteractiveCallScript />, document.getElementById('root'));
-    </script>
+ReactDOM.render(<SkryptRozmowy />, document.getElementById('root'));
+</script>
 </body>
 </html>
