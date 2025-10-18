@@ -1,833 +1,1638 @@
-import React, { useState, useMemo } from 'react';
-import { Phone, ChevronRight, Calculator, AlertCircle, CheckCircle, RefreshCw, MessageSquare, User, Home, DollarSign, Clock, Target } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktywny Skrypt Rozmowy - Zdrowe Mieszkanie+</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-const InteractiveCallScript = () => {
-  const [stage, setStage] = useState('start');
-  const [contactType, setContactType] = useState('');
-  const [clientProfile, setClientProfile] = useState('');
-  const [notes, setNotes] = useState('');
-  const [clientData, setClientData] = useState({
-    name: '',
-    propertyType: '',
-    area: '',
-    monthlyBill: '',
-    problems: []
-  });
-  const [history, setHistory] = useState([]);
-  const [showCalculator, setShowCalculator] = useState(false);
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
 
-  // Kalkulator
-  const calculations = useMemo(() => {
-    const area = parseFloat(clientData.area) || 0;
-    const bill = parseFloat(clientData.monthlyBill) || 0;
-    
-    const rekuperatorCount = area <= 80 ? 1 : area <= 120 ? 2 : area <= 180 ? 3 : 4;
-    const rekuperatorCost = 2800 + (rekuperatorCount - 1) * 3200;
-    const pscLiters = area * 0.33;
-    const pscCost = pscLiters * 110;
-    const totalKomfort = rekuperatorCost + pscCost + 2000;
-    const savings = bill * 0.3;
-    const annualSavings = savings * 12;
-    const roi = totalKomfort / annualSavings;
-    
-    return {
-      rekuperatorCount,
-      rekuperatorCost,
-      pscCost,
-      totalKomfort,
-      savings,
-      annualSavings,
-      roi
-    };
-  }, [clientData.area, clientData.monthlyBill]);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-  const addToHistory = (action) => {
-    setHistory([...history, { time: new Date().toLocaleTimeString(), action }]);
-  };
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
-  const goToStage = (newStage, action) => {
-    setStage(newStage);
-    if (action) addToHistory(action);
-  };
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
 
-  // KOMPONENTY ETAPÓW
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-  const StartScreen = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <Phone className="w-16 h-16 mx-auto mb-4 text-green-600" />
-        <h2 className="text-3xl font-bold mb-2">Zdrowe Mieszkanie+</h2>
-        <p className="text-gray-600">Interaktywny Skrypt Rozmowy</p>
-      </div>
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        }
 
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-        <p className="font-semibold mb-2">🎯 Cel rozmowy:</p>
-        <ul className="text-sm space-y-1">
-          <li>✅ Główny: Umówić spotkanie diagnostyczne</li>
-          <li>✅ Idealny: Bezpośrednie zamknięcie sprzedaży</li>
-          <li>✅ Minimalny: Pozostawić kontakt na przyszłość</li>
-        </ul>
-      </div>
+        .title-section h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
 
-      <div className="space-y-4">
-        <div>
-          <label className="block font-semibold mb-2">1. Typ kontaktu:</label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => { setContactType('warm'); goToStage('profile', 'Wybrano kontakt ciepły'); }}
-              className="p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition"
-            >
-              <div className="font-semibold">☀️ Ciepły</div>
-              <div className="text-xs text-gray-600 mt-1">Polecenie, poprzedni kontakt</div>
-            </button>
-            <button
-              onClick={() => { setContactType('cold'); goToStage('profile', 'Wybrano kontakt zimny'); }}
-              className="p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition"
-            >
-              <div className="font-semibold">❄️ Zimny</div>
-              <div className="text-xs text-gray-600 mt-1">Baza danych, cold call</div>
-            </button>
-          </div>
+        .title-section p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .client-info {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .progress-step {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .progress-step.active {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stage-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stage-title {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stage-timer {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8B4513;
+        }
+
+        .info-box {
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .info-box.blue {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left-color: #2196F3;
+        }
+
+        .info-box.green {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border-left-color: #4CAF50;
+        }
+
+        .info-box.yellow {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            border-left-color: #FF9800;
+        }
+
+        .info-box.purple {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-left-color: #9C27B0;
+        }
+
+        .info-box.orange {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left-color: #FF5722;
+        }
+
+        .info-box.red {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-left-color: #f44336;
+        }
+
+        .button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            text-align: left;
+            width: 100%;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .button:hover::before {
+            left: 100%;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .button.primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .button.secondary {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .button.warning {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .button.danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .button.success {
+            background: linear-gradient(135deg, #4CAF50, #388E3C);
+            color: white;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .calculator {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin: 25px 0;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        }
+
+        .calculator-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .calc-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .calc-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .calc-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .calc-subtext {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        .sidebar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .sidebar-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+
+        .textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .history {
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: rgba(102, 126, 234, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border-left: 3px solid #667eea;
+        }
+
+        .history-time {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .speech-bubble {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+            position: relative;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 30px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header, .main-content, .sidebar-card {
+                padding: 20px;
+            }
+            
+            .stage-title {
+                font-size: 24px;
+            }
+            
+            .calculator-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="title-section">
+                        <h1>Interaktywny Skrypt Rozmowy</h1>
+                        <p>Zdrowe Mieszkanie+ by 4-eco</p>
+                    </div>
+                </div>
+                <div class="client-info" id="clientInfo" style="display: none;">
+                    <div style="font-size: 12px; opacity: 0.8;">Klient:</div>
+                    <div style="font-weight: bold;" id="clientName">Brak danych</div>
+                </div>
+            </div>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-step" id="step-profile">Profil</div>
+                <i class="fas fa-chevron-right" style="color: #ccc;"></i>
+                <div class="progress-step" id="step-opening">Otwarcie</div>
+                <i class="fas fa-chevron-right" style="color: #ccc;"></i>
+                <div class="progress-step" id="step-qualification">Kwalifikacja</div>
+                <i class="fas fa-chevron-right" style="color: #ccc;"></i>
+                <div class="progress-step" id="step-presentation">Prezentacja</div>
+                <i class="fas fa-chevron-right" style="color: #ccc;"></i>
+                <div class="progress-step" id="step-closing">Zamknięcie</div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
 
-  const ProfileScreen = () => (
-    <div className="space-y-6">
-      <h3 className="text-2xl font-bold">2. Profil Klienta</h3>
-      <p className="text-gray-600">Wybierz który typ klienta pasuje najbardziej (możesz zmienić później):</p>
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Start Screen -->
+            <div id="startScreen" class="fade-in">
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <div class="logo-icon pulse" style="width: 80px; height: 80px; margin: 0 auto 20px; font-size: 32px;">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 10px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Zdrowe Mieszkanie+</h2>
+                    <p style="color: #666; font-size: 16px;">Interaktywny Skrypt Rozmowy</p>
+                </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <button
-          onClick={() => { setClientProfile('family'); goToStage('opening', 'Profil: Młoda rodzina'); }}
-          className="p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition text-left"
-        >
-          <div className="font-semibold text-lg mb-2">👨‍👩‍👧‍👦 Młoda Rodzina</div>
-          <div className="text-sm text-gray-600">
-            Dzieci z alergią, wilgoć, zapachy
-            <br />
-            <strong>Hak:</strong> Zdrowe powietrze dla dzieci
-          </div>
-        </button>
+                <div class="info-box blue">
+                    <p style="font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-bullseye"></i> Cel rozmowy:
+                    </p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li style="margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4CAF50;"></i> 
+                            <strong>Główny:</strong> Umówić spotkanie diagnostyczne
+                        </li>
+                        <li style="margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4CAF50;"></i> 
+                            <strong>Idealny:</strong> Bezpośrednie zamknięcie sprzedaży
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4CAF50;"></i> 
+                            <strong>Minimalny:</strong> Pozostawić kontakt na przyszłość
+                        </li>
+                    </ul>
+                </div>
 
-        <button
-          onClick={() => { setClientProfile('senior'); goToStage('opening', 'Profil: Senior'); }}
-          className="p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition text-left"
-        >
-          <div className="font-semibold text-lg mb-2">👴 Senior</div>
-          <div className="text-sm text-gray-600">
-            Wysokie rachunki, emerytura
-            <br />
-            <strong>Hak:</strong> Oszczędności 30%
-          </div>
-        </button>
+                <div class="input-group">
+                    <label class="input-label">1. Typ kontaktu:</label>
+                    <div class="grid grid-2">
+                        <button class="button primary" onclick="selectContactType('warm')">
+                            <div>
+                                <div style="font-size: 18px; margin-bottom: 5px;">☀️ Ciepły</div>
+                                <div style="font-size: 12px; opacity: 0.8;">Polecenie, poprzedni kontakt</div>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="button secondary" onclick="selectContactType('cold')">
+                            <div>
+                                <div style="font-size: 18px; margin-bottom: 5px;">❄️ Zimny</div>
+                                <div style="font-size: 12px; opacity: 0.8;">Baza danych, cold call</div>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        <button
-          onClick={() => { setClientProfile('eco'); goToStage('opening', 'Profil: Świadomy ekologicznie'); }}
-          className="p-4 border-2 border-gray-300 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition text-left"
-        >
-          <div className="font-semibold text-lg mb-2">🌱 Świadomy Ekologicznie</div>
-          <div className="text-sm text-gray-600">
-            Ekologia, wartość nieruchomości
-            <br />
-            <strong>Hak:</strong> Ślad węglowy + ROI
-          </div>
-        </button>
+            <!-- Profile Screen -->
+            <div id="profileScreen" class="hidden">
+                <div class="stage-header">
+                    <h3 class="stage-title">2. Profil Klienta</h3>
+                </div>
+                <p style="color: #666; margin-bottom: 30px; font-size: 16px;">Wybierz który typ klienta pasuje najbardziej (możesz zmienić później):</p>
 
-        <button
-          onClick={() => { setClientProfile('skeptic'); goToStage('opening', 'Profil: Sceptyk'); }}
-          className="p-4 border-2 border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition text-left"
-        >
-          <div className="font-semibold text-lg mb-2">🤔 Sceptyk</div>
-          <div className="text-sm text-gray-600">
-            Nie wierzy w obietnice
-            <br />
-            <strong>Hak:</strong> Dowody, gwarancje, certyfikaty
-          </div>
-        </button>
-      </div>
-    </div>
-  );
+                <div class="grid grid-2">
+                    <div class="card" onclick="selectClientProfile('family')">
+                        <div class="card-title">
+                            <span style="font-size: 24px;">👨‍👩‍👧‍👦</span>
+                            Młoda Rodzina
+                        </div>
+                        <div class="card-description">
+                            Dzieci z alergią, wilgoć, zapachy<br>
+                            <strong>Hak:</strong> Zdrowe powietrze dla dzieci
+                        </div>
+                    </div>
 
-  const OpeningScreen = () => {
-    const hooks = {
-      family: "Pomagamy rodzinom pozbyć się problemu z wilgocią, pleśnią i alergenami - szczególnie ważne dla dzieci z alergią.",
-      senior: "Pomagamy obniżyć rachunki za ogrzewanie nawet o 30% - to średnio 2000-3000 zł oszczędności rocznie.",
-      eco: "Pomagamy zmniejszyć ślad węglowy domu i zwiększyć jego wartość rynkową o 10-15%.",
-      skeptic: "Realizujemy właśnie projekty termomodernizacyjne w Państwa okolicy z gwarancją efektywności na piśmie."
-    };
+                    <div class="card" onclick="selectClientProfile('senior')">
+                        <div class="card-title">
+                            <span style="font-size: 24px;">👴</span>
+                            Senior
+                        </div>
+                        <div class="card-description">
+                            Wysokie rachunki, emerytura<br>
+                            <strong>Hak:</strong> Oszczędności 30%
+                        </div>
+                    </div>
 
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-bold">3. Otwarcie</h3>
-          <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">⏱️ 10-15 sekund</span>
-        </div>
+                    <div class="card" onclick="selectClientProfile('eco')">
+                        <div class="card-title">
+                            <span style="font-size: 24px;">🌱</span>
+                            Świadomy Ekologicznie
+                        </div>
+                        <div class="card-description">
+                            Ekologia, wartość nieruchomości<br>
+                            <strong>Hak:</strong> Ślad węglowy + ROI
+                        </div>
+                    </div>
 
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-          <p className="font-semibold mb-2">💬 POWIEDZ:</p>
-          <div className="bg-white p-4 rounded border border-green-200">
-            {contactType === 'warm' ? (
-              <p className="text-lg leading-relaxed">
-                <strong>"Dzień dobry, nazywam się [Twoje Imię] z firmy 4-eco. Dzwonię w sprawie programu Zdrowe Mieszkanie Plus. Czy to dobry moment na krótką rozmowę?"</strong>
-                <br /><br />
-                [PAUZA - pozwól klientowi odpowiedzieć]
-                <br /><br />
-                {hooks[clientProfile]}
-              </p>
-            ) : (
-              <p className="text-lg leading-relaxed">
-                <strong>"Dzień dobry, mówi [Twoje Imię] z firmy 4-eco. Czy rozmawiam z Panem/Panią [Nazwisko]?"</strong>
-                <br /><br />
-                [Poczekaj na potwierdzenie]
-                <br /><br />
-                <strong>"Świetnie! Dzwonię, ponieważ aktualnie realizujemy w Państwa rejonie program Zdrowe Mieszkanie Plus. {hooks[clientProfile]} Czy to dobry moment na 2-minutową rozmowę?"</strong>
-              </p>
-            )}
-          </div>
-        </div>
+                    <div class="card" onclick="selectClientProfile('skeptic')">
+                        <div class="card-title">
+                            <span style="font-size: 24px;">🤔</span>
+                            Sceptyk
+                        </div>
+                        <div class="card-description">
+                            Nie wierzy w obietnice<br>
+                            <strong>Hak:</strong> Dowody, gwarancje, certyfikaty
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-          <p className="font-semibold mb-2">⚠️ WSKAZÓWKA:</p>
-          <ul className="text-sm space-y-1">
-            <li>• Uśmiechnij się - słychać to przez telefon!</li>
-            <li>• Poczekaj na odpowiedź klienta</li>
-            <li>• Jeśli mówi "nie mam czasu" - przejdź do obiekcji</li>
-            <li>• Jeśli zgadza się - idź dalej do kwalifikacji</li>
-          </ul>
-        </div>
+            <!-- Opening Screen -->
+            <div id="openingScreen" class="hidden">
+                <div class="stage-header">
+                    <h3 class="stage-title">3. Otwarcie</h3>
+                    <div class="stage-timer">⏱️ 10-15 sekund</div>
+                </div>
 
-        <div className="space-y-3">
-          <p className="font-semibold">Reakcja klienta:</p>
-          <button
-            onClick={() => goToStage('qualification', 'Klient zgodził się na rozmowę')}
-            className="w-full p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center justify-between"
-          >
-            <span>✅ "Ok, mów" / "Tak, słucham"</span>
-            <ChevronRight />
-          </button>
-          <button
-            onClick={() => goToStage('objection-time', 'Obiekcja: Nie mam czasu')}
-            className="w-full p-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center justify-between"
-          >
-            <span>⏰ "Nie mam czasu"</span>
-            <ChevronRight />
-          </button>
-          <button
-            onClick={() => goToStage('objection-interest', 'Obiekcja: Nie interesuje mnie')}
-            className="w-full p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center justify-between"
-          >
-            <span>❌ "Nie interesuje mnie to"</span>
-            <ChevronRight />
-          </button>
-        </div>
-      </div>
-    );
-  };
+                <div class="info-box green">
+                    <p style="font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-comments"></i> POWIEDZ:
+                    </p>
+                    <div class="speech-bubble" id="openingScript">
+                        <!-- Script will be inserted here -->
+                    </div>
+                </div>
 
-  const QualificationScreen = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold">4. Kwalifikacja</h3>
-        <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">⏱️ 1-2 minuty</span>
-      </div>
+                <div class="info-box yellow">
+                    <p style="font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-triangle"></i> WSKAZÓWKA:
+                    </p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li style="margin-bottom: 5px;">• Uśmiechnij się - słychać to przez telefon!</li>
+                        <li style="margin-bottom: 5px;">• Poczekaj na odpowiedź klienta</li>
+                        <li style="margin-bottom: 5px;">• Jeśli mówi "nie mam czasu" - przejdź do obiekcji</li>
+                        <li>• Jeśli zgadza się - idź dalej do kwalifikacji</li>
+                    </ul>
+                </div>
 
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-        <p className="font-semibold mb-2">🎯 CEL:</p>
-        <p className="text-sm">Zbierz dane do kalkulatora: typ nieruchomości, metraż, problemy, rachunki</p>
-      </div>
+                <div style="margin-top: 30px;">
+                    <p style="font-weight: 600; margin-bottom: 20px;">Reakcja klienta:</p>
+                    <button class="button success" onclick="goToStage('qualification')">
+                        <span>✅ "Ok, mów" / "Tak, słucham"</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="button warning" onclick="goToStage('objection-time')">
+                        <span>⏰ "Nie mam czasu"</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="button danger" onclick="goToStage('objection-interest')">
+                        <span>❌ "Nie interesuje mnie to"</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
 
-      <div className="space-y-4">
-        <div>
-          <label className="font-semibold mb-2 block">📝 Dane Klienta (wypełniaj podczas rozmowy):</label>
-          
-          <div className="space-y-3 bg-white p-4 rounded-lg border">
-            <input
-              type="text"
-              placeholder="Imię i nazwisko"
-              value={clientData.name}
-              onChange={(e) => setClientData({...clientData, name: e.target.value})}
-              className="w-full p-2 border rounded"
-            />
+            <!-- Qualification Screen -->
+            <div id="qualificationScreen" class="hidden">
+                <div class="stage-header">
+                    <h3 class="stage-title">4. Kwalifikacja</h3>
+                    <div class="stage-timer">⏱️ 1-2 minuty</div>
+                </div>
 
-            <div>
-              <p className="text-sm font-semibold mb-2">💬 ZAPYTAJ: "Mieszkacie Państwo w mieszkaniu czy w domu jednorodzinnym?"</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setClientData({...clientData, propertyType: 'mieszkanie'})}
-                  className={`flex-1 p-2 rounded border-2 ${clientData.propertyType === 'mieszkanie' ? 'border-green-500 bg-green-50' : 'border-gray-300'}`}
-                >
-                  🏢 Mieszkanie
+                <div class="info-box blue">
+                    <p style="font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-bullseye"></i> CEL:
+                    </p>
+                    <p style="font-size: 14px;">Zbierz dane do kalkulatora: typ nieruchomości, metraż, problemy, rachunki</p>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">📝 Dane Klienta (wypełniaj podczas rozmowy):</label>
+                    
+                    <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #e0e0e0;">
+                        <div class="input-group">
+                            <input type="text" class="input" placeholder="Imię i nazwisko" id="clientNameInput" onchange="updateClientData()">
+                        </div>
+
+                        <div class="input-group">
+                            <p style="font-weight: 600; margin-bottom: 10px;">💬 ZAPYTAJ: "Mieszkacie Państwo w mieszkaniu czy w domu jednorodzinnym?"</p>
+                            <div class="grid grid-2">
+                                <button class="button" id="propertyApartment" onclick="selectPropertyType('mieszkanie')">
+                                    🏢 Mieszkanie
+                                </button>
+                                <button class="button" id="propertyHouse" onclick="selectPropertyType('dom')">
+                                    🏠 Dom
+                                </button>
+                            </div>
+                            <div id="houseBonus" class="info-box green" style="display: none; margin-top: 15px;">
+                                ✅ <strong>ZANOTUJ:</strong> Dom = ulga termomodernizacyjna do 7300 zł!
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <p style="font-weight: 600; margin-bottom: 10px;">💬 ZAPYTAJ: "Jaka jest mniej więcej powierzchnia?"</p>
+                            <input type="number" class="input" placeholder="Powierzchnia w m²" id="areaInput" onchange="updateClientData()">
+                            <div id="areaInfo" class="info-box blue" style="display: none; margin-top: 15px;">
+                                <!-- Area info will be inserted here -->
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <p style="font-weight: 600; margin-bottom: 10px;">💬 ZAPYTAJ: "Ile mniej więcej płacą Państwo miesięcznie za ogrzewanie i prąd?"</p>
+                            <input type="number" class="input" placeholder="Rachunki w zł/miesiąc" id="billInput" onchange="updateClientData()">
+                            <div id="billInfo" class="info-box blue" style="display: none; margin-top: 15px;">
+                                <!-- Bill info will be inserted here -->
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <p style="font-weight: 600; margin-bottom: 15px;">💬 ZAPYTAJ: "Czy borykają się Państwo z którymś z tych problemów?"</p>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="checkbox" value="Wysokie rachunki" onchange="updateProblems()">
+                                    <span>Wysokie rachunki</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="checkbox" value="Wilgoć/pleśń" onchange="updateProblems()">
+                                    <span>Wilgoć/pleśń</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="checkbox" value="Zapachy/duszność" onchange="updateProblems()">
+                                    <span>Zapachy/duszność</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="checkbox" value="Alergeny" onchange="updateProblems()">
+                                    <span>Alergeny</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="checkbox" value="Nierównomierna temperatura" onchange="updateProblems()">
+                                    <span>Nierównomierna temperatura</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="button secondary" id="calculatorToggle" onclick="toggleCalculator()" style="display: none;">
+                    <span><i class="fas fa-calculator"></i> Pokaż Kalkulator</span>
                 </button>
-                <button
-                  onClick={() => setClientData({...clientData, propertyType: 'dom'})}
-                  className={`flex-1 p-2 rounded border-2 ${clientData.propertyType === 'dom' ? 'border-green-500 bg-green-50' : 'border-gray-300'}`}
-                >
-                  🏠 Dom
+
+                <div id="calculator" class="calculator hidden">
+                    <div class="calculator-title">
+                        <i class="fas fa-calculator"></i>
+                        Szybki Kalkulator
+                    </div>
+                    <div class="calculator-grid" id="calculatorGrid">
+                        <!-- Calculator results will be inserted here -->
+                    </div>
+                </div>
+
+                <button class="button primary" onclick="goToStage('presentation')" style="margin-top: 30px; font-size: 18px; padding: 20px;">
+                    <span>Przejdź do Prezentacji</span>
+                    <i class="fas fa-chevron-right"></i>
                 </button>
-              </div>
-              {clientData.propertyType === 'dom' && (
-                <div className="mt-2 p-2 bg-green-50 rounded text-sm">
-                  ✅ <strong>ZANOTUJ:</strong> Dom = ulga termomodernizacyjna do 7300 zł!
+            </div>
+
+            <!-- Presentation Screen -->
+            <div id="presentationScreen" class="hidden">
+                <div class="stage-header">
+                    <h3 class="stage-title">5. Prezentacja</h3>
+                    <div class="stage-timer">⏱️ 2-3 minuty</div>
                 </div>
-              )}
-            </div>
 
-            <div>
-              <p className="text-sm font-semibold mb-2">💬 ZAPYTAJ: "Jaka jest mniej więcej powierzchnia?"</p>
-              <input
-                type="number"
-                placeholder="Powierzchnia w m²"
-                value={clientData.area}
-                onChange={(e) => setClientData({...clientData, area: e.target.value})}
-                className="w-full p-2 border rounded"
-              />
-              {clientData.area && (
-                <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                  💡 <strong>POWIEDZ:</strong> "Ok, {clientData.area}m² - to oznacza {calculations.rekuperatorCount} rekuperator{calculations.rekuperatorCount > 1 ? 'y' : ''} dla optymalnej wentylacji."
+                <div class="info-box purple">
+                    <p style="font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-bullseye"></i> FOKUS:
+                    </p>
+                    <p style="font-size: 14px;">Główny problem klienta: <strong id="mainProblem">Wysokie rachunki</strong></p>
                 </div>
-              )}
-            </div>
 
-            <div>
-              <p className="text-sm font-semibold mb-2">💬 ZAPYTAJ: "Ile mniej więcej płacą Państwo miesięcznie za ogrzewanie i prąd?"</p>
-              <input
-                type="number"
-                placeholder="Rachunki w zł/miesiąc"
-                value={clientData.monthlyBill}
-                onChange={(e) => setClientData({...clientData, monthlyBill: e.target.value})}
-                className="w-full p-2 border rounded"
-              />
-              {clientData.monthlyBill && (
-                <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                  💡 <strong>POWIEDZ:</strong> "{clientData.monthlyBill} zł miesięcznie, to daje {clientData.monthlyBill * 12} rocznie. System zaoszczędzi około 30% - czyli {Math.round(calculations.savings)} zł miesięcznie."
+                <div class="info-box green">
+                    <p style="font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-comments"></i> POWIEDZ:
+                    </p>
+                    <div class="speech-bubble" id="presentationScript">
+                        <!-- Presentation script will be inserted here -->
+                    </div>
                 </div>
-              )}
+
+                <div class="info-box yellow">
+                    <p style="font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-lightbulb"></i> WSKAZÓWKA:
+                    </p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li style="margin-bottom: 5px;">• Mów wolno, z pauzami</li>
+                        <li style="margin-bottom: 5px;">• Podkreślaj konkretne liczby</li>
+                        <li style="margin-bottom: 5px;">• Czekaj na reakcję klienta</li>
+                        <li>• Nie przytłaczaj szczegółami technicznymi</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <p style="font-weight: 600; margin-bottom: 20px;">Reakcja klienta:</p>
+                    <button class="button success" onclick="goToStage('closing')">
+                        <span>✅ "Brzmi ciekawie" / "Jak to działa?"</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="button warning" onclick="goToStage('objection-price')">
+                        <span>💰 "To za drogie"</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="button danger" onclick="goToStage('objection-belief')">
+                        <span>❌ "Nie wierzę w te oszczędności"</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="button warning" onclick="goToStage('objection-think')">
+                        <span>🤔 "Muszę pomyśleć"</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
 
-            <div>
-              <p className="text-sm font-semibold mb-2">💬 ZAPYTAJ: "Czy borykają się Państwo z którymś z tych problemów?"</p>
-              <div className="space-y-2">
-                {['Wysokie rachunki', 'Wilgoć/pleśń', 'Zapachy/duszność', 'Alergeny', 'Nierównomierna temperatura'].map(problem => (
-                  <label key={problem} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={clientData.problems.includes(problem)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setClientData({...clientData, problems: [...clientData.problems, problem]});
-                        } else {
-                          setClientData({...clientData, problems: clientData.problems.filter(p => p !== problem)});
-                        }
-                      }}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm">{problem}</span>
-                  </label>
-                ))}
-              </div>
+            <!-- Objection Screens -->
+            <div id="objectionScreen" class="hidden">
+                <div class="stage-header">
+                    <h3 class="stage-title" id="objectionTitle" style="color: #FF5722;">Obiekcja</h3>
+                    <i class="fas fa-exclamation-triangle" style="color: #FF5722; font-size: 32px;"></i>
+                </div>
+
+                <div class="info-box orange">
+                    <p style="font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-triangle"></i> PAMIĘTAJ:
+                    </p>
+                    <p style="font-size: 14px;">Obiekcje to normalne! Nie oznaczają "nie" - oznaczają "potrzebuję więcej informacji".</p>
+                </div>
+
+                <div id="objectionContent">
+                    <!-- Objection content will be inserted here -->
+                </div>
+
+                <div class="grid grid-2" style="margin-top: 30px;">
+                    <button class="button success" onclick="goToStage('closing')">
+                        ✅ Obsłużone - Do Zamknięcia
+                    </button>
+                    <button class="button secondary" onclick="goToStage('presentation')">
+                        🔄 Wróć do Prezentacji
+                    </button>
+                </div>
             </div>
-          </div>
+
+            <!-- Closing Screen -->
+            <div id="closingScreen" class="hidden">
+                <div class="stage-header">
+                    <h3 class="stage-title" style="color: #4CAF50;">6. Zamknięcie</h3>
+                    <i class="fas fa-bullseye" style="color: #4CAF50; font-size: 32px;"></i>
+                </div>
+
+                <div class="info-box green">
+                    <p style="font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-bullseye"></i> CEL:
+                    </p>
+                    <p style="font-size: 14px;">Umówić spotkanie diagnostyczne lub wysłać materiały z konkretnym follow-up</p>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <div class="card" style="border: 2px solid #4CAF50;">
+                        <div class="card-title" style="color: #4CAF50;">
+                            <i class="fas fa-check-circle"></i>
+                            ZAMKNIĘCIE #1: Twarde (klient gorący)
+                        </div>
+                        <div class="speech-bubble">
+                            <p style="line-height: 1.6;">
+                                <strong>"Świetnie! Widzę że system Zdrowe Mieszkanie+ mógłby być idealny dla Państwa. Następny krok to darmowe spotkanie diagnostyczne - nasz konsultant przyjdzie z kamerą termowizyjną, zmierzymy dokładnie straty energii i przygotujemy spersonalizowaną ofertę."</strong>
+                                <br><br>
+                                <strong>"Mam wolne terminy jutro o 16:00 lub w piątek o 10:00. Który termin bardziej Państwu pasuje?"</strong>
+                            </p>
+                        </div>
+                        <div class="info-box yellow" style="margin-top: 15px;">
+                            💡 Nie pytaj "czy chce Pan spotkanie" - zakładaj że chce. Daj wybór między A a B!
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <div class="card" style="border: 2px solid #2196F3;">
+                        <div class="card-title" style="color: #2196F3;">
+                            <i class="fas fa-comments"></i>
+                            ZAMKNIĘCIE #2: Miękkie (klient ostrożny)
+                        </div>
+                        <div class="speech-bubble">
+                            <p style="line-height: 1.6;">
+                                <strong>"Rozumiem, to duża decyzja. Zróbmy tak:"</strong>
+                                <br><br>
+                                • Krok 1 - Wyślę Państwu mailowo kalkulator z wyliczeniami dla Państwa <span id="closingPropertyType">nieruchomości</span> <span id="closingArea"></span>m²<br>
+                                • Krok 2 - Zadzwonię za 2-3 dni, odpowiem na pytania<br>
+                                • Krok 3 - Jeśli uznacie że ma sens - umówimy spotkanie<br><br>
+                                <strong>"Brzmi dobrze? Jaki jest Państwa adres email?"</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <div class="card" style="border: 2px solid #666;">
+                        <div class="card-title" style="color: #666;">
+                            <i class="fas fa-clock"></i>
+                            ZAMKNIĘCIE #3: Awaryjne (klient zimny)
+                        </div>
+                        <div class="speech-bubble">
+                            <p style="line-height: 1.6;">
+                                <strong>"Rozumiem, to nie jest dobry moment. Nie ma sprawy."</strong>
+                                <br><br>
+                                <strong>"Zapisze Pan/Pani mój numer? +48 502 963 879. Jeśli kiedyś pojawią się problemy z wilgocią, wysokimi rachunkami lub jakością powietrza - zadzwońcie. Pomogę bez zobowiązań."</strong>
+                                <br><br>
+                                <strong>"Mogę zadzwonić za 3-6 miesięcy, żeby sprawdzić czy sytuacja się zmieniła? Tylko przypomnienie, zero presji."</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #4CAF50, #2196F3); color: white; padding: 30px; border-radius: 20px; margin-bottom: 30px;">
+                    <h4 style="font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-clipboard-check"></i>
+                        📝 PO ROZMOWIE - CHECKLIST:
+                    </h4>
+                    <div style="display: grid; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" style="width: 18px; height: 18px;">
+                            <span>Zanotuj wynik w CRM</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" style="width: 18px; height: 18px;">
+                            <span>Wyślij SMS/email z potwierdzeniem (jeśli umówiono spotkanie)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" style="width: 18px; height: 18px;">
+                            <span>Zaplanuj follow-up (2-7 dni)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" style="width: 18px; height: 18px;">
+                            <span>Przeanalizuj co zadziałało / co poprawić</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="button" onclick="startNewConversation()" style="background: linear-gradient(135deg, #9C27B0, #E91E63); color: white; font-size: 18px; padding: 20px;">
+                    <span><i class="fas fa-redo"></i> Rozpocznij Nową Rozmowę</span>
+                </button>
+            </div>
         </div>
 
-        {clientData.area && clientData.monthlyBill && (
-          <button
-            onClick={() => setShowCalculator(!showCalculator)}
-            className="w-full p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center justify-center gap-2"
-          >
-            <Calculator size={20} />
-            {showCalculator ? 'Ukryj' : 'Pokaż'} Kalkulator
-          </button>
-        )}
-
-        {showCalculator && (
-          <div className="bg-gradient-to-br from-green-50 to-blue-50 p-4 rounded-lg border-2 border-green-300">
-            <h4 className="font-bold mb-3 flex items-center gap-2">
-              <Calculator size={20} />
-              Szybki Kalkulator
-            </h4>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="bg-white p-3 rounded">
-                <div className="text-gray-600">Rekuperatory</div>
-                <div className="text-xl font-bold">{calculations.rekuperatorCount} szt.</div>
-                <div className="text-xs text-gray-500">{calculations.rekuperatorCost.toFixed(0)} zł</div>
-              </div>
-              <div className="bg-white p-3 rounded">
-                <div className="text-gray-600">Farba PSC</div>
-                <div className="text-xl font-bold">{calculations.pscLiters.toFixed(0)} L</div>
-                <div className="text-xs text-gray-500">{calculations.pscCost.toFixed(0)} zł</div>
-              </div>
-              <div className="bg-white p-3 rounded">
-                <div className="text-gray-600">KOMFORT</div>
-                <div className="text-xl font-bold text-green-600">{calculations.totalKomfort.toFixed(0)} zł</div>
-                <div className="text-xs text-gray-500">z montażem</div>
-              </div>
-              <div className="bg-white p-3 rounded">
-                <div className="text-gray-600">Oszczędności</div>
-                <div className="text-xl font-bold text-blue-600">{Math.round(calculations.savings)} zł/mc</div>
-                <div className="text-xs text-gray-500">{Math.round(calculations.annualSavings)} zł/rok</div>
-              </div>
-              <div className="bg-white p-3 rounded col-span-2">
-                <div className="text-gray-600">Zwrot inwestycji (ROI)</div>
-                <div className="text-2xl font-bold text-purple-600">{calculations.roi.toFixed(1)} lat</div>
-                <div className="text-xs text-gray-500">Później czyste oszczędności przez 15+ lat</div>
-              </div>
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-card">
+                <div class="sidebar-title">
+                    <i class="fas fa-sticky-note"></i>
+                    Notatki
+                </div>
+                <textarea class="textarea" id="notes" placeholder="Zapisuj ważne informacje z rozmowy..."></textarea>
             </div>
-          </div>
-        )}
 
-        <button
-          onClick={() => goToStage('presentation', 'Przejście do prezentacji')}
-          className="w-full p-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center justify-between text-lg font-semibold"
-        >
-          <span>Przejdź do Prezentacji</span>
-          <ChevronRight size={24} />
-        </button>
-      </div>
+            <div class="sidebar-card">
+                <div class="sidebar-title">
+                    <i class="fas fa-history"></i>
+                    Historia Rozmowy
+                </div>
+                <div class="history" id="history">
+                    <p style="color: #999; font-size: 14px; text-align: center; padding: 20px;">Brak historii</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d2a1b7a5b7a0abbcfcb9bdbebdb6a8bbb7b892e6ffb7b1bdfca2be">[email&#160;protected]</a> | 📱 +48 502 963 879 | 🌐 www.4-eco.pl</p>
+        </div>
     </div>
-  );
 
-  const PresentationScreen = () => {
-    const mainProblem = clientData.problems[0] || 'Wysokie rachunki';
-    
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-bold">5. Prezentacja</h3>
-          <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">⏱️ 2-3 minuty</span>
-        </div>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // Application State
+        let appState = {
+            stage: 'start',
+            contactType: '',
+            clientProfile: '',
+            clientData: {
+                name: '',
+                propertyType: '',
+                area: '',
+                monthlyBill: '',
+                problems: []
+            },
+            history: [],
+            calculations: {}
+        };
 
-        <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-          <p className="font-semibold mb-2">🎯 FOKUS:</p>
-          <p className="text-sm">Główny problem klienta: <strong>{mainProblem}</strong></p>
-        </div>
+        // Hooks for different client profiles
+        const hooks = {
+            family: "Pomagamy rodzinom pozbyć się problemu z wilgocią, pleśnią i alergenami - szczególnie ważne dla dzieci z alergią.",
+            senior: "Pomagamy obniżyć rachunki za ogrzewanie nawet o 30% - to średnio 2000-3000 zł oszczędności rocznie.",
+            eco: "Pomagamy zmniejszyć ślad węglowy domu i zwiększyć jego wartość rynkową o 10-15%.",
+            skeptic: "Realizujemy właśnie projekty termomodernizacyjne w Państwa okolicy z gwarancją efektywności na piśmie."
+        };
 
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-          <p className="font-semibold mb-2">💬 POWIEDZ:</p>
-          <div className="bg-white p-4 rounded border border-green-200 space-y-4">
-            <p className="leading-relaxed">
-              <strong>"Ok {clientData.name ? clientData.name.split(' ')[0] : 'Panie/Pani'}, więc bazując na tym co Pan/Pani powiedział - {clientData.propertyType} {clientData.area}m², rachunki około {clientData.monthlyBill} złotych miesięcznie - mam dla Państwa rozwiązanie."</strong>
-            </p>
+        // Objection responses
+        const objections = {
+            'objection-time': {
+                title: 'Obiekcja: "Nie mam czasu"',
+                responses: [
+                    {
+                        label: 'ODPOWIEDŹ #1: Konkretne opcje',
+                        text: '"Rozumiem! Kiedy byłby lepszy moment? Mogę zadzwonić dziś wieczorem o 19:00 lub jutro rano o 10:00?"',
+                        tip: 'Zawsze daj konkretne opcje czasu, nie pytaj "kiedy"'
+                    },
+                    {
+                        label: 'ODPOWIEDŹ #2: 60 sekund',
+                        text: '"Rozumiem. Zajmę Panu/Pani dosłownie 60 sekund, żeby powiedzieć o czym to jest. Jeśli uzna Pan/Pani że to bez sensu - się rozłączymy. Zgoda?"',
+                        tip: 'Jeśli zgodzi się - bardzo skrócona wersja haka'
+                    }
+                ],
+                actions: ['Umów konkretny termin', 'Daj 60-sekundowy pitch', 'Podziękuj i zakończ']
+            },
+            'objection-interest': {
+                title: 'Obiekcja: "Nie interesuje mnie to"',
+                responses: [
+                    {
+                        label: 'ODPOWIEDŹ: Reframing',
+                        text: '"Rozumiem. Mogę zapytać - co konkretnie Pana/Panią nie interesuje? Oszczędności na rachunkach czy poprawa jakości powietrza?"',
+                        tip: 'Klient prawie zawsze odpowie - to otwiera na rozmowę'
+                    }
+                ],
+                actions: ['Słuchaj odpowiedzi', 'Adresuj konkretny punkt', 'Jeśli dalej nie - grzecznie zakończ']
+            },
+            'objection-price': {
+                title: 'Obiekcja: "To za drogie"',
+                responses: [
+                    {
+                        label: 'ODPOWIEDŹ #1: Feel-Felt-Found',
+                        text: `"Rozumiem to uczucie. Wielu naszych klientów czuło to samo na początku. Ale kiedy pokazałem im, że płacą X złotych miesięcznie, czyli Y rocznie, i że system zaoszczędzi Z rocznie - zrozumieli, że to nie wydatek, to inwestycja która się spłaca."`,
+                        tip: 'Technika "Czuję-Czuł-Znalazł" buduje empatię'
+                    },
+                    {
+                        label: 'ODPOWIEDŹ #2: Rozbicie na małe kwoty',
+                        text: `"Rozumiem. To X zł na 20 lat. To Y zł miesięcznie. Mniej niż koszt kawy na wynos każdego dnia. A oszczędności? Z zł miesięcznie. System płaci za siebie!"`,
+                        tip: 'Rozbij dużą kwotę na małe, miesięczne'
+                    },
+                    {
+                        label: 'ODPOWIEDŹ #3: Kredyt',
+                        text: `"Rozumiem. Dlatego mamy kredyt w Alior Bank - rata około 200 zł miesięcznie przez 5 lat. Oszczędza Pan/Pani 150 zł, płaci ratę 200 = realny koszt 50 zł miesięcznie. Czy zdrowie jest warte 50 zł?"`,
+                        tip: 'Pokaz że rata < oszczędności'
+                    }
+                ],
+                actions: ['Przejdź do zamknięcia', 'Zaproponuj spotkanie', 'Wyślij kalkulację mailowo']
+            },
+            'objection-belief': {
+                title: 'Obiekcja: "Nie wierzę w oszczędności"',
+                responses: [
+                    {
+                        label: 'ODPOWIEDŹ: Dowody',
+                        text: '"Rozumiem sceptycyzm! Gdybym był na Pana/Pani miejscu, też bym miał wątpliwości. Dlatego nie proszę żeby mi Pan/Pani wierzył na słowo. Mam konkretne dane: Audyt państwa Kowalskich - przed: 680 zł/mc, po: 470 zł/mc. Certyfikat TÜV NORD dla farby - niezależne badania +2°C. Plus gwarancja efektywności - jeśli oszczędności <20%, zwracamy różnicę."',
+                        tip: 'Konkretne liczby + dowody + gwarancja'
+                    }
+                ],
+                actions: ['Zaproponuj darmową diagnozę', 'Pokaż certyfikaty', 'Przejdź do zamknięcia']
+            },
+            'objection-think': {
+                title: 'Obiekcja: "Muszę pomyśleć"',
+                responses: [
+                    {
+                        label: 'ODPOWIEDŹ #1: Odkryj prawdziwą obiekcję',
+                        text: '"Oczywiście, to całkowicie zrozumiałe! Ale pozwoli Pan/Pani na jedno pytanie - zazwyczaj gdy ktoś mówi \'muszę pomyśleć\', to znaczy że coś go niepokoi. Czy to kwestia ceny, czy może wątpliwości czy to działa, czy coś innego?"',
+                        tip: 'MILCZ i słuchaj. Klient ujawni prawdziwą obiekcję'
+                    },
+                    {
+                        label: 'ODPOWIEDŹ #2: Umów spotkanie',
+                        text: '"Świetnie! Zastanowienie to mądra decyzja. Powiem tak - mam jeszcze kilka wolnych terminów w tym tygodniu. Mogę zarezerwować spotkanie diagnostyczne - jutro o 16:00 lub piątek o 10:00. Zobaczy Pan/Pani dokładne wyliczenia, i wtedy w spokoju podejmie decyzję. Który termin bardziej pasuje?"',
+                        tip: 'Alternatywne zamknięcie: A czy B, nie tak/nie'
+                    }
+                ],
+                actions: ['Odkryj prawdziwą obiekcję', 'Umów spotkanie', 'Wyślij materiały + follow-up']
+            }
+        };
 
-            <div className="border-t pt-4">
-              <p className="font-semibold mb-2">📦 PAKIET KOMFORT</p>
-              <ul className="space-y-2 ml-4">
-                <li className="leading-relaxed">
-                  <strong>1. Farba termoizolacyjna PSC Interior</strong> - to nie zwykła farba. Ma ceramiczne mikrosfery, które odbijają ciepło z powrotem do pokoju. Efekt? <span className="bg-yellow-200 px-1">Plus 2 stopnie cieplej bez dodatkowych kosztów ogrzewania</span>. Badania potwierdzają - +2°C odczuwalne.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>2. {calculations.rekuperatorCount} rekuperator{calculations.rekuperatorCount > 1 ? 'y' : ''} EasyEko</strong> - inteligentna wentylacja. Wypuszcza stare powietrze, wpuszcza świeże, ale... <span className="bg-yellow-200 px-1">odzyskuje 90% ciepła!</span> Efekt? Świeże powietrze bez strat energii. Plus filtry HEPA - zatrzymują 99,9% alergenów.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>3. Pełny montaż</strong> - wszystko pod klucz, 1-2 dni robót, gwarancja 5 lat.
-                </li>
-              </ul>
-            </div>
+        // Utility Functions
+        function addToHistory(action) {
+            const time = new Date().toLocaleTimeString();
+            appState.history.push({ time, action });
+            updateHistoryDisplay();
+        }
 
-            {clientData.area && clientData.monthlyBill && (
-              <div className="border-t pt-4 bg-blue-50 p-3 rounded">
-                <p className="font-semibold mb-2">💰 KOSZTY I OSZCZĘDNOŚCI:</p>
-                <ul className="space-y-1 text-sm">
-                  <li>• Koszt całości: około <strong className="text-lg">{calculations.totalKomfort.toFixed(0)} zł</strong></li>
-                  <li>• Oszczędności: <strong className="text-lg text-green-600">{Math.round(calculations.savings)} zł miesięcznie</strong> (30%)</li>
-                  <li>• Rocznie: <strong className="text-lg text-green-600">{Math.round(calculations.annualSavings)} zł</strong></li>
-                  <li>• Zwrot inwestycji: <strong className="text-lg text-purple-600">{calculations.roi.toFixed(1)} lat</strong></li>
-                  <li className="pt-2 border-t">• System działa 20 lat = <strong className="text-xl text-blue-600">{Math.round((20 - calculations.roi) * calculations.annualSavings).toFixed(0)} zł</strong> czystych oszczędności!</li>
-                </ul>
-              </div>
-            )}
+        function updateHistoryDisplay() {
+            const historyEl = document.getElementById('history');
+            if (appState.history.length === 0) {
+                historyEl.innerHTML = '<p style="color: #999; font-size: 14px; text-align: center; padding: 20px;">Brak historii</p>';
+            } else {
+                historyEl.innerHTML = appState.history.map(item => 
+                    `<div class="history-item">
+                        <span class="history-time">${item.time}</span> - ${item.action}
+                    </div>`
+                ).join('');
+            }
+        }
 
-            <p className="leading-relaxed pt-4 border-t">
-              <strong>"To nie koszt - to inwestycja, która się spłaca. Pytanie brzmi: czy niższe rachunki i zdrowsze powietrze są dla Państwa ważne?"</strong>
-            </p>
-          </div>
-        </div>
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            const steps = ['profile', 'opening', 'qualification', 'presentation', 'closing'];
+            
+            if (appState.stage === 'start') {
+                progressBar.style.display = 'none';
+                return;
+            }
+            
+            progressBar.style.display = 'flex';
+            
+            steps.forEach(step => {
+                const stepEl = document.getElementById(`step-${step}`);
+                const currentIndex = steps.indexOf(appState.stage.replace(/objection-.*/, 'presentation'));
+                const stepIndex = steps.indexOf(step);
+                
+                if (stepIndex <= currentIndex || appState.stage.includes('objection')) {
+                    stepEl.classList.add('active');
+                } else {
+                    stepEl.classList.remove('active');
+                }
+            });
+        }
 
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-          <p className="font-semibold mb-2">💡 WSKAZÓWKA:</p>
-          <ul className="text-sm space-y-1">
-            <li>• Mów wolno, z pauzami</li>
-            <li>• Podkreślaj konkretne liczby</li>
-            <li>• Czekaj na reakcję klienta</li>
-            <li>• Nie przytłaczaj szczegółami technicznymi</li>
-          </ul>
-        </div>
+        function updateClientInfo() {
+            const clientInfo = document.getElementById('clientInfo');
+            const clientName = document.getElementById('clientName');
+            
+            if (appState.clientData.name) {
+                clientInfo.style.display = 'block';
+                clientName.textContent = appState.clientData.name;
+            } else {
+                clientInfo.style.display = 'none';
+            }
+        }
 
-        <div className="space-y-3">
-          <p className="font-semibold">Reakcja klienta:</p>
-          <button
-            onClick={() => goToStage('closing', 'Klient zainteresowany - przejście do zamknięcia')}
-            className="w-full p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center justify-between"
-          >
-            <span>✅ "Brzmi ciekawie" / "Jak to działa?"</span>
-            <ChevronRight />
-          </button>
-          <button
-            onClick={() => goToStage('objection-price', 'Obiekcja: To za drogie')}
-            className="w-full p-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center justify-between"
-          >
-            <span>💰 "To za drogie"</span>
-            <ChevronRight />
-          </button>
-          <button
-            onClick={() => goToStage('objection-belief', 'Obiekcja: Nie wierzę w oszczędności')}
-            className="w-full p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center justify-between"
-          >
-            <span>❌ "Nie wierzę w te oszczędności"</span>
-            <ChevronRight />
-          </button>
-          <button
-            onClick={() => goToStage('objection-think', 'Obiekcja: Muszę pomyśleć')}
-            className="w-full p-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center justify-between"
-          >
-            <span>🤔 "Muszę pomyśleć"</span>
-            <ChevronRight />
-          </button>
-        </div>
-      </div>
-    );
-  };
+        function calculateResults() {
+            const area = parseFloat(appState.clientData.area) || 0;
+            const bill = parseFloat(appState.clientData.monthlyBill) || 0;
+            
+            const rekuperatorCount = area <= 80 ? 1 : area <= 120 ? 2 : area <= 180 ? 3 : 4;
+            const rekuperatorCost = 2800 + (rekuperatorCount - 1) * 3200;
+            const pscLiters = area * 0.33;
+            const pscCost = pscLiters * 110;
+            const totalKomfort = rekuperatorCost + pscCost + 2000;
+            const savings = bill * 0.3;
+            const annualSavings = savings * 12;
+            const roi = totalKomfort / annualSavings;
+            
+            appState.calculations = {
+                rekuperatorCount,
+                rekuperatorCost,
+                pscCost,
+                totalKomfort,
+                savings,
+                annualSavings,
+                roi
+            };
+            
+            return appState.calculations;
+        }
 
-  const ObjectionScreen = ({ type }) => {
-    const objections = {
-      'objection-time': {
-        title: 'Obiekcja: "Nie mam czasu"',
-        responses: [
-          {
-            label: 'ODPOWIEDŹ #1: Konkretne opcje',
-            text: '"Rozumiem! Kiedy byłby lepszy moment? Mogę zadzwonić dziś wieczorem o 19:00 lub jutro rano o 10:00?"',
-            tip: 'Zawsze daj konkretne opcje czasu, nie pytaj "kiedy"'
-          },
-          {
-            label: 'ODPOWIEDŹ #2: 60 sekund',
-            text: '"Rozumiem. Zajmę Panu/Pani dosłownie 60 sekund, żeby powiedzieć o czym to jest. Jeśli uzna Pan/Pani że to bez sensu - się rozłączymy. Zgoda?"',
-            tip: 'Jeśli zgodzi się - bardzo skrócona wersja haka'
-          }
-        ],
-        actions: ['Umów konkretny termin', 'Daj 60-sekundowy pitch', 'Podziękuj i zakończ']
-      },
-      'objection-interest': {
-        title: 'Obiekcja: "Nie interesuje mnie to"',
-        responses: [
-          {
-            label: 'ODPOWIEDŹ: Reframing',
-            text: '"Rozumiem. Mogę zapytać - co konkretnie Pana/Panią nie interesuje? Oszczędności na rachunkach czy poprawa jakości powietrza?"',
-            tip: 'Klient prawie zawsze odpowie - to otwiera na rozmowę'
-          }
-        ],
-        actions: ['Słuchaj odpowiedzi', 'Adresuj konkretny punkt', 'Jeśli dalej nie - grzecznie zakończ']
-      },
-      'objection-price': {
-        title: 'Obiekcja: "To za drogie"',
-        responses: [
-          {
-            label: 'ODPOWIEDŹ #1: Feel-Felt-Found',
-            text: `"Rozumiem to uczucie. Wielu naszych klientów czuło to samo na początku. Ale kiedy pokazałem im, że płacą ${clientData.monthlyBill || 'X'} złotych miesięcznie, czyli ${(clientData.monthlyBill || 0) * 12} rocznie, i że system zaoszczędzi ${Math.round(calculations.annualSavings) || 'Y'} rocznie - zrozumieli, że to nie wydatek, to inwestycja która się spłaca."`,
-            tip: 'Technika "Czuję-Czuł-Znalazł" buduje empatię'
-          },
-          {
-            label: 'ODPOWIEDŹ #2: Rozbicie na małe kwoty',
-            text: `"Rozumiem. To ${calculations.totalKomfort ? calculations.totalKomfort.toFixed(0) : 'X'} zł na 20 lat. To ${calculations.totalKomfort ? Math.round(calculations.totalKomfort / 20 / 12) : 'Y'} zł miesięcznie. Mniej niż koszt kawy na wynos każdego dnia. A oszczędności? ${Math.round(calculations.savings) || 'Z'} zł miesięcznie. System płaci za siebie!"`,
-            tip: 'Rozbij dużą kwotę na małe, miesięczne'
-          },
-          {
-            label: 'ODPOWIEDŹ #3: Kredyt',
-            text: `"Rozumiem. Dlatego mamy kredyt w Alior Bank - rata około ${Math.round(calculations.totalKomfort / 60) || '200'} zł miesięcznie przez 5 lat. Oszczędza Pan/Pani ${Math.round(calculations.savings) || '150'} zł, płaci ratę ${Math.round(calculations.totalKomfort / 60) || '200'} = realny koszt ${Math.round((calculations.totalKomfort / 60) - calculations.savings) || '50'} zł miesięcznie. Czy zdrowie jest warte ${Math.round((calculations.totalKomfort / 60) - calculations.savings) || '50'} zł?"`,
-            tip: 'Pokaz że rata < oszczędności'
-          }
-        ],
-        actions: ['Przejdź do zamknięcia', 'Zaproponuj spotkanie', 'Wyślij kalkulację mailowo']
-      },
-      'objection-belief': {
-        title: 'Obiekcja: "Nie wierzę w oszczędności"',
-        responses: [
-          {
-            label: 'ODPOWIEDŹ: Dowody',
-            text: '"Rozumiem sceptycyzm! Gdybym był na Pana/Pani miejscu, też bym miał wątpliwości. Dlatego nie proszę żeby mi Pan/Pani wierzył na słowo. Mam konkretne dane: Audyt państwa Kowalskich - przed: 680 zł/mc, po: 470 zł/mc. Certyfikat TÜV NORD dla farby - niezależne badania +2°C. Plus gwarancja efektywności - jeśli oszczędności <20%, zwracamy różnicę."',
-            tip: 'Konkretne liczby + dowody + gwarancja'
-          }
-        ],
-        actions: ['Zaproponuj darmową diagnozę', 'Pokaż certyfikaty', 'Przejdź do zamknięcia']
-      },
-      'objection-think': {
-        title: 'Obiekcja: "Muszę pomyśleć"',
-        responses: [
-          {
-            label: 'ODPOWIEDŹ #1: Odkryj prawdziwą obiekcję',
-            text: '"Oczywiście, to całkowicie zrozumiałe! Ale pozwoli Pan/Pani na jedno pytanie - zazwyczaj gdy ktoś mówi \'muszę pomyśleć\', to znaczy że coś go niepokoi. Czy to kwestia ceny, czy może wątpliwości czy to działa, czy coś innego?"',
-            tip: 'MILCZ i słuchaj. Klient ujawni prawdziwą obiekcję'
-          },
-          {
-            label: 'ODPOWIEDŹ #2: Umów spotkanie',
-            text: '"Świetnie! Zastanowienie to mądra decyzja. Powiem tak - mam jeszcze kilka wolnych terminów w tym tygodniu. Mogę zarezerwować spotkanie diagnostyczne - jutro o 16:00 lub piątek o 10:00. Zobaczy Pan/Pani dokładne wyliczenia, i wtedy w spokoju podejmie decyzję. Który termin bardziej pasuje?"',
-            tip: 'Alternatywne zamknięcie: A czy B, nie tak/nie'
-          }
-        ],
-        actions: ['Odkryj prawdziwą obiekcję', 'Umów spotkanie', 'Wyślij materiały + follow-up']
-      }
-    };
+        function updateCalculatorDisplay() {
+            const calc = calculateResults();
+            const calculatorGrid = document.getElementById('calculatorGrid');
+            
+            calculatorGrid.innerHTML = `
+                <div class="calc-item">
+                    <div class="calc-label">Rekuperatory</div>
+                    <div class="calc-value">${calc.rekuperatorCount} szt.</div>
+                    <div class="calc-subtext">${Math.round(calc.rekuperatorCost)} zł</div>
+                </div>
+                <div class="calc-item">
+                    <div class="calc-label">Farba PSC</div>
+                    <div class="calc-value">${Math.round(calc.pscLiters)} L</div>
+                    <div class="calc-subtext">${Math.round(calc.pscCost)} zł</div>
+                </div>
+                <div class="calc-item">
+                    <div class="calc-label">KOMFORT</div>
+                    <div class="calc-value" style="color: #4CAF50;">${Math.round(calc.totalKomfort)} zł</div>
+                    <div class="calc-subtext">z montażem</div>
+                </div>
+                <div class="calc-item">
+                    <div class="calc-label">Oszczędności</div>
+                    <div class="calc-value" style="color: #2196F3;">${Math.round(calc.savings)} zł/mc</div>
+                    <div class="calc-subtext">${Math.round(calc.annualSavings)} zł/rok</div>
+                </div>
+                <div class="calc-item" style="grid-column: span 2;">
+                    <div class="calc-label">Zwrot inwestycji (ROI)</div>
+                    <div class="calc-value" style="color: #9C27B0; font-size: 24px;">${calc.roi.toFixed(1)} lat</div>
+                    <div class="calc-subtext">Później czyste oszczędności przez 15+ lat</div>
+                </div>
+            `;
+        }
 
-    const objection = objections[type] || objections['objection-time'];
+        // Stage Management
+        function showStage(stageName) {
+            // Hide all stages
+            const stages = ['startScreen', 'profileScreen', 'openingScreen', 'qualificationScreen', 'presentationScreen', 'objectionScreen', 'closingScreen'];
+            stages.forEach(stage => {
+                document.getElementById(stage).classList.add('hidden');
+            });
+            
+            // Show current stage
+            if (stageName.includes('objection')) {
+                document.getElementById('objectionScreen').classList.remove('hidden');
+                showObjection(stageName);
+            } else {
+                document.getElementById(stageName + 'Screen').classList.remove('hidden');
+            }
+            
+            // Add fade-in animation
+            document.getElementById('mainContent').classList.add('fade-in');
+            setTimeout(() => {
+                document.getElementById('mainContent').classList.remove('fade-in');
+            }, 500);
+        }
 
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-bold text-orange-600">{objection.title}</h3>
-          <AlertCircle className="text-orange-500" size={32} />
-        </div>
+        function goToStage(newStage, action) {
+            appState.stage = newStage;
+            if (action) addToHistory(action);
+            
+            updateProgressBar();
+            updateClientInfo();
+            showStage(newStage);
+            
+            // Update stage-specific content
+            if (newStage === 'opening') {
+                updateOpeningScript();
+            } else if (newStage === 'presentation') {
+                updatePresentationScript();
+            } else if (newStage === 'closing') {
+                updateClosingScript();
+            }
+        }
 
-        <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
-          <p className="font-semibold mb-2">⚠️ PAMIĘTAJ:</p>
-          <p className="text-sm">Obiekcje to normalne! Nie oznaczają "nie" - oznaczają "potrzebuję więcej informacji".</p>
-        </div>
+        // Contact Type Selection
+        function selectContactType(type) {
+            appState.contactType = type;
+            goToStage('profile', `Wybrano kontakt ${type === 'warm' ? 'ciepły' : 'zimny'}`);
+        }
 
-        {objection.responses.map((response, idx) => (
-          <div key={idx} className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-            <p className="font-semibold mb-2">{response.label}</p>
-            <div className="bg-white p-4 rounded border border-green-200 mb-2">
-              <p className="leading-relaxed">{response.text}</p>
-            </div>
-            <div className="bg-yellow-50 p-2 rounded text-sm">
-              💡 <strong>Wskazówka:</strong> {response.tip}
-            </div>
-          </div>
-        ))}
+        // Client Profile Selection
+        function selectClientProfile(profile) {
+            appState.clientProfile = profile;
+            const profileNames = {
+                family: 'Młoda rodzina',
+                senior: 'Senior',
+                eco: 'Świadomy ekologicznie',
+                skeptic: 'Sceptyk'
+            };
+            goToStage('opening', `Profil: ${profileNames[profile]}`);
+        }
 
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-          <p className="font-semibold mb-2">📋 MOŻLIWE AKCJE:</p>
-          <ul className="text-sm space-y-1">
-            {objection.actions.map((action, idx) => (
-              <li key={idx}>• {action}</li>
-            ))}
-          </ul>
-        </div>
+        // Opening Script Update
+        function updateOpeningScript() {
+            const script = document.getElementById('openingScript');
+            const hook = hooks[appState.clientProfile] || hooks.family;
+            
+            if (appState.contactType === 'warm') {
+                script.innerHTML = `
+                    <p style="line-height: 1.6;">
+                        <strong>"Dzień dobry, nazywam się [Twoje Imię] z firmy 4-eco. Dzwonię w sprawie programu Zdrowe Mieszkanie Plus. Czy to dobry moment na krótką rozmowę?"</strong>
+                        <br><br>
+                        [PAUZA - pozwól klientowi odpowiedzieć]
+                        <br><br>
+                        ${hook}
+                    </p>
+                `;
+            } else {
+                script.innerHTML = `
+                    <p style="line-height: 1.6;">
+                        <strong>"Dzień dobry, mówi [Twoje Imię] z firmy 4-eco. Czy rozmawiam z Panem/Panią [Nazwisko]?"</strong>
+                        <br><br>
+                        [Poczekaj na potwierdzenie]
+                        <br><br>
+                        <strong>"Świetnie! Dzwonię, ponieważ aktualnie realizujemy w Państwa rejonie program Zdrowe Mieszkanie Plus. ${hook} Czy to dobry moment na 2-minutową rozmowę?"</strong>
+                    </p>
+                `;
+            }
+        }
 
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => goToStage('closing', 'Obiekcja obsłużona - przejście do zamknięcia')}
-            className="p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-          >
-            ✅ Obsłużone - Do Zamknięcia
-          </button>
-          <button
-            onClick={() => goToStage('presentation', 'Powrót do prezentacji')}
-            className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-          >
-            🔄 Wróć do Prezentacji
-          </button>
-        </div>
-      </div>
-    );
-  };
+        // Client Data Updates
+        function updateClientData() {
+            const name = document.getElementById('clientNameInput').value;
+            const area = document.getElementById('areaInput').value;
+            const bill = document.getElementById('billInput').value;
+            
+            appState.clientData.name = name;
+            appState.clientData.area = area;
+            appState.clientData.monthlyBill = bill;
+            
+            updateClientInfo();
+            
+            // Show area info
+            if (area) {
+                const calc = calculateResults();
+                const areaInfo = document.getElementById('areaInfo');
+                areaInfo.style.display = 'block';
+                areaInfo.innerHTML = `💡 <strong>POWIEDZ:</strong> "Ok, ${area}m² - to oznacza ${calc.rekuperatorCount} rekuperator${calc.rekuperatorCount > 1 ? 'y' : ''} dla optymalnej wentylacji."`;
+            }
+            
+            // Show bill info
+            if (bill) {
+                const calc = calculateResults();
+                const billInfo = document.getElementById('billInfo');
+                billInfo.style.display = 'block';
+                billInfo.innerHTML = `💡 <strong>POWIEDZ:</strong> "${bill} zł miesięcznie, to daje ${bill * 12} rocznie. System zaoszczędzi około 30% - czyli ${Math.round(calc.savings)} zł miesięcznie."`;
+            }
+            
+            // Show calculator toggle if both area and bill are filled
+            if (area && bill) {
+                document.getElementById('calculatorToggle').style.display = 'block';
+                updateCalculatorDisplay();
+            }
+        }
 
-  const ClosingScreen = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-green-600">6. Zamknięcie</h3>
-        <Target className="text-green-500" size={32} />
-      </div>
+        function selectPropertyType(type) {
+            appState.clientData.propertyType = type;
+            
+            // Update button styles
+            const apartmentBtn = document.getElementById('propertyApartment');
+            const houseBtn = document.getElementById('propertyHouse');
+            
+            apartmentBtn.style.borderColor = type === 'mieszkanie' ? '#4CAF50' : '#e0e0e0';
+            apartmentBtn.style.backgroundColor = type === 'mieszkanie' ? '#e8f5e8' : '';
+            houseBtn.style.borderColor = type === 'dom' ? '#4CAF50' : '#e0e0e0';
+            houseBtn.style.backgroundColor = type === 'dom' ? '#e8f5e8' : '';
+            
+            // Show house bonus
+            const houseBonus = document.getElementById('houseBonus');
+            houseBonus.style.display = type === 'dom' ? 'block' : 'none';
+        }
 
-      <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-        <p className="font-semibold mb-2">🎯 CEL:</p>
-        <p className="text-sm">Umówić spotkanie diagnostyczne lub wysłać materiały z konkretnym follow-up</p>
-      </div>
+        function updateProblems() {
+            const checkboxes = document.querySelectorAll('.checkbox');
+            appState.clientData.problems = [];
+            
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    appState.clientData.problems.push(checkbox.value);
+                }
+            });
+        }
 
-      <div className="space-y-4">
-        <div className="bg-white border-2 border-green-300 rounded-lg p-4">
-          <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
-            <CheckCircle className="text-green-500" />
-            ZAMKNIĘCIE #1: Twarde (klient gorący)
-          </h4>
-          <div className="bg-green-50 p-3 rounded mb-3">
-            <p className="leading-relaxed">
-              <strong>"Świetnie! Widzę że system Zdrowe Mieszkanie+ mógłby być idealny dla Państwa. Następny krok to darmowe spotkanie diagnostyczne - nasz konsultant przyjdzie z kamerą termowizyjną, zmierzymy dokładnie straty energii i przygotujemy spersonalizowaną ofertę."</strong>
-              <br /><br />
-              <strong>"Mam wolne terminy jutro o 16:00 lub w piątek o 10:00. Który termin bardziej Państwu pasuje?"</strong>
-            </p>
-          </div>
-          <div className="bg-yellow-50 p-2 rounded text-sm">
-            💡 Nie pytaj "czy chce Pan spotkanie" - zakładaj że chce. Daj wybór między A a B!
-          </div>
-        </div>
+        function toggleCalculator() {
+            const calculator = document.getElementById('calculator');
+            const toggle = document.getElementById('calculatorToggle');
+            
+            if (calculator.classList.contains('hidden')) {
+                calculator.classList.remove('hidden');
+                toggle.innerHTML = '<span><i class="fas fa-calculator"></i> Ukryj Kalkulator</span>';
+            } else {
+                calculator.classList.add('hidden');
+                toggle.innerHTML = '<span><i class="fas fa-calculator"></i> Pokaż Kalkulator</span>';
+            }
+        }
 
-        <div className="bg-white border-2 border-blue-300 rounded-lg p-4">
-          <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
-            <MessageSquare className="text-blue-500" />
-            ZAMKNIĘCIE #2: Miękkie (klient ostrożny)
-          </h4>
-          <div className="bg-blue-50 p-3 rounded mb-3">
-            <p className="leading-relaxed">
-              <strong>"Rozumiem, to duża decyzja. Zróbmy tak:"</strong>
-              <br /><br />
-              • Krok 1 - Wyślę Państwu mailowo kalkulator z wyliczeniami dla Państwa {clientData.propertyType} {clientData.area}m²
-              <br />
-              • Krok 2 - Zadzwonię za 2-3 dni, odpowiem na pytania
-              <br />
-              • Krok 3 - Jeśli uznacie że ma sens - umówimy spotkanie
-              <br /><br />
-              <strong>"Brzmi dobrze? Jaki jest Państwa adres email?"</strong>
-            </p>
-          </div>
-        </div>
+        // Presentation Script Update
+        function updatePresentationScript() {
+            const script = document.getElementById('presentationScript');
+            const mainProblem = document.getElementById('mainProblem');
+            const calc = calculateResults();
+            
+            const clientName = appState.clientData.name ? appState.clientData.name.split(' ')[0] : 'Panie/Pani';
+            const problem = appState.clientData.problems[0] || 'Wysokie rachunki';
+            
+            mainProblem.textContent = problem;
+            
+            script.innerHTML = `
+                <p style="line-height: 1.6; margin-bottom: 20px;">
+                    <strong>"Ok ${clientName}, więc bazując na tym co Pan/Pani powiedział - ${appState.clientData.propertyType} ${appState.clientData.area}m², rachunki około ${appState.clientData.monthlyBill} złotych miesięcznie - mam dla Państwa rozwiązanie."</strong>
+                </p>
 
-        <div className="bg-white border-2 border-gray-300 rounded-lg p-4">
-          <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
-            <Clock className="text-gray-500" />
-            ZAMKNIĘCIE #3: Awaryjne (klient zimny)
-          </h4>
-          <div className="bg-gray-50 p-3 rounded mb-3">
-            <p className="leading-relaxed">
-              <strong>"Rozumiem, to nie jest dobry moment. Nie ma sprawy."</strong>
-              <br /><br />
-              <strong>"Zapisze Pan/Pani mój numer? +48 502 963 879. Jeśli kiedyś pojawią się problemy z wilgocią, wysokimi rachunkami lub jakością powietrza - zadzwońcie. Pomogę bez zobowiązań."</strong>
-              <br /><br />
-              <strong>"Mogę zadzwonić za 3-6 miesięcy, żeby sprawdzić czy sytuacja się zmieniła? Tylko przypomnienie, zero presji."</strong>
-            </p>
-          </div>
-        </div>
-      </div>
+                <div style="border-top: 2px solid #e0e0e0; padding-top: 20px; margin-bottom: 20px;">
+                    <p style="font-weight: 600; margin-bottom: 15px;">📦 PAKIET KOMFORT</p>
+                    <ul style="list-style: none; padding-left: 0; margin-bottom: 0;">
+                        <li style="margin-bottom: 15px; line-height: 1.6;">
+                            <strong>1. Farba termoizolacyjna PSC Interior</strong> - to nie zwykła farba. Ma ceramiczne mikrosfery, które odbijają ciepło z powrotem do pokoju. Efekt? <span style="background: #ffeb3b; padding: 2px 6px; border-radius: 4px;">Plus 2 stopnie cieplej bez dodatkowych kosztów ogrzewania</span>. Badania potwierdzają - +2°C odczuwalne.
+                        </li>
+                        <li style="margin-bottom: 15px; line-height: 1.6;">
+                            <strong>2. ${calc.rekuperatorCount} rekuperator${calc.rekuperatorCount > 1 ? 'y' : ''} EasyEko</strong> - inteligentna wentylacja. Wypuszcza stare powietrze, wpuszcza świeże, ale... <span style="background: #ffeb3b; padding: 2px 6px; border-radius: 4px;">odzyskuje 90% ciepła!</span> Efekt? Świeże powietrze bez strat energii. Plus filtry HEPA - zatrzymują 99,9% alergenów.
+                        </li>
+                        <li style="line-height: 1.6;">
+                            <strong>3. Pełny montaż</strong> - wszystko pod klucz, 1-2 dni robót, gwarancja 5 lat.
+                        </li>
+                    </ul>
+                </div>
 
-      <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-6 rounded-lg">
-        <h4 className="font-bold text-xl mb-3">📝 PO ROZMOWIE - CHECKLIST:</h4>
-        <div className="space-y-2 text-sm">
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="w-4 h-4" />
-            <span>Zanotuj wynik w CRM</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="w-4 h-4" />
-            <span>Wyślij SMS/email z potwierdzeniem (jeśli umówiono spotkanie)</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="w-4 h-4" />
-            <span>Zaplanuj follow-up (2-7 dni)</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="w-4 h-4" />
-            <span>Przeanalizuj co zadziałało / co poprawić</span>
-          </label>
-        </div>
-      </div>
+                ${appState.clientData.area && appState.clientData.monthlyBill ? `
+                <div style="border-top: 2px solid #e0e0e0; padding-top: 20px; background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <p style="font-weight: 600; margin-bottom: 15px;">💰 KOSZTY I OSZCZĘDNOŚCI:</p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li style="margin-bottom: 8px;">• Koszt całości: około <strong style="font-size: 18px;">${Math.round(calc.totalKomfort)} zł</strong></li>
+                        <li style="margin-bottom: 8px;">• Oszczędności: <strong style="font-size: 18px; color: #4CAF50;">${Math.round(calc.savings)} zł miesięcznie</strong> (30%)</li>
+                        <li style="margin-bottom: 8px;">• Rocznie: <strong style="font-size: 18px; color: #4CAF50;">${Math.round(calc.annualSavings)} zł</strong></li>
+                        <li style="margin-bottom: 8px;">• Zwrot inwestycji: <strong style="font-size: 18px; color: #9C27B0;">${calc.roi.toFixed(1)} lat</strong></li>
+                        <li style="padding-top: 10px; border-top: 1px solid #ccc;">• System działa 20 lat = <strong style="font-size: 20px; color: #2196F3;">${Math.round((20 - calc.roi) * calc.annualSavings)} zł</strong> czystych oszczędności!</li>
+                    </ul>
+                </div>
+                ` : ''}
 
-      <button
-        onClick={() => {
-          if (window.confirm('Czy chcesz rozpocząć nową rozmowę? Obecne dane zostaną utracone.')) {
-            setStage('start');
-            setClientData({ name: '', propertyType: '', area: '', monthlyBill: '', problems: [] });
-            setNotes('');
-            setHistory([]);
-            addToHistory('Rozpoczęto nową rozmowę');
-          }
-        }}
-        className="w-full p-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition flex items-center justify-center gap-2 text-lg font-bold"
-      >
-        <RefreshCw size={24} />
-        Rozpocznij Nową Rozmowę
-      </button>
-    </div>
-  );
+                <p style="line-height: 1.6; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <strong>"To nie koszt - to inwestycja, która się spłaca. Pytanie brzmi: czy niższe rachunki i zdrowsze powietrze są dla Państwa ważne?"</strong>
+                </p>
+            `;
+        }
 
-  // RENDER
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Phone className="text-green-600" size={32} />
-              <div>
-                <h1 className="text-2xl font-bold">Interaktywny Skrypt Rozmowy</h1>
-                <p className="text-gray-600 text-sm">Zdrowe Mieszkanie+ by 4-eco</p>
-              </div>
-            </div>
-            {clientData.name && (
-              <div className="text-right">
-                <div className="text-sm text-gray-600">Klient:</div>
-                <div className="font-bold">{clientData.name || 'Brak danych'}</div>
-              </div>
-            )}
-          </div>
+        // Objection Handling
+        function showObjection(type) {
+            const objectionTitle = document.getElementById('objectionTitle');
+            const objectionContent = document.getElementById('objectionContent');
+            const objection = objections[type];
+            
+            if (!objection) return;
+            
+            objectionTitle.textContent = objection.title;
+            
+            let responsesHtml = '';
+            objection.responses.forEach((response, idx) => {
+                responsesHtml += `
+                    <div class="info-box green" style="margin-bottom: 20px;">
+                        <p style="font-weight: 600; margin-bottom: 15px;">${response.label}</p>
+                        <div class="speech-bubble" style="margin-bottom: 15px;">
+                            <p style="line-height: 1.6;">${response.text}</p>
+                        </div>
+                        <div style="background: #fff8e1; padding: 10px; border-radius: 8px; font-size: 14px;">
+                            💡 <strong>Wskazówka:</strong> ${response.tip}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const actionsHtml = `
+                <div class="info-box blue">
+                    <p style="font-weight: 600; margin-bottom: 15px;">📋 MOŻLIWE AKCJE:</p>
+                    <ul style="list-style: none; padding-left: 0;">
+                        ${objection.actions.map(action => `<li style="margin-bottom: 5px;">• ${action}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            
+            objectionContent.innerHTML = responsesHtml + actionsHtml;
+        }
 
-          {/* Progress bar */}
-          {stage !== 'start' && (
-            <div className="flex items-center gap-2 text-xs">
-              <div className={`px-2 py-1 rounded ${['profile', 'opening', 'qualification', 'presentation', 'closing'].includes(stage) || stage.includes('objection') ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
-                Profil
-              </div>
-              <ChevronRight size={16} className="text-gray-400" />
-              <div className={`px-2 py-1 rounded ${['opening', 'qualification', 'presentation', 'closing'].includes(stage) || stage.includes('objection') ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
-                Otwarcie
-              </div>
-              <ChevronRight size={16} className="text-gray-400" />
-              <div className={`px-2 py-1 rounded ${['qualification', 'presentation', 'closing'].includes(stage) || stage.includes('objection') ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
-                Kwalifikacja
-              </div>
-              <ChevronRight size={16} className="text-gray-400" />
-              <div className={`px-2 py-1 rounded ${['presentation', 'closing'].includes(stage) || stage.includes('objection') ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
-                Prezentacja
-              </div>
-              <ChevronRight size={16} className="text-gray-400" />
-              <div className={`px-2 py-1 rounded ${stage === 'closing' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
-                Zamknięcie
-              </div>
-            </div>
-          )}
-        </div>
+        // Closing Script Update
+        function updateClosingScript() {
+            const closingPropertyType = document.getElementById('closingPropertyType');
+            const closingArea = document.getElementById('closingArea');
+            
+            closingPropertyType.textContent = appState.clientData.propertyType || 'nieruchomości';
+            closingArea.textContent = appState.clientData.area || '';
+        }
 
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          {stage === 'start' && <StartScreen />}
-          {stage === 'profile' && <ProfileScreen />}
-          {stage === 'opening' && <OpeningScreen />}
-          {stage === 'qualification' && <QualificationScreen />}
-          {stage === 'presentation' && <PresentationScreen />}
-          {stage.includes('objection') && <ObjectionScreen type={stage} />}
-          {stage === 'closing' && <ClosingScreen />}
-        </div>
+        // Start New Conversation
+        function startNewConversation() {
+            if (confirm('Czy chcesz rozpocząć nową rozmowę? Obecne dane zostaną utracone.')) {
+                appState = {
+                    stage: 'start',
+                    contactType: '',
+                    clientProfile: '',
+                    clientData: {
+                        name: '',
+                        propertyType: '',
+                        area: '',
+                        monthlyBill: '',
+                        problems: []
+                    },
+                    history: [],
+                    calculations: {}
+                };
+                
+                // Reset form inputs
+                document.getElementById('clientNameInput').value = '';
+                document.getElementById('areaInput').value = '';
+                document.getElementById('billInput').value = '';
+                document.getElementById('notes').value = '';
+                
+                // Reset checkboxes
+                document.querySelectorAll('.checkbox').forEach(cb => cb.checked = false);
+                
+                // Reset button styles
+                document.getElementById('propertyApartment').style.borderColor = '#e0e0e0';
+                document.getElementById('propertyApartment').style.backgroundColor = '';
+                document.getElementById('propertyHouse').style.borderColor = '#e0e0e0';
+                document.getElementById('propertyHouse').style.backgroundColor = '';
+                
+                // Hide calculator
+                document.getElementById('calculator').classList.add('hidden');
+                document.getElementById('calculatorToggle').style.display = 'none';
+                
+                addToHistory('Rozpoczęto nową rozmowę');
+                goToStage('start');
+                showStage('start');
+                updateProgressBar();
+                updateClientInfo();
+            }
+        }
 
-        {/* Notes & History Sidebar */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-lg p-4">
-            <h3 className="font-bold mb-3 flex items-center gap-2">
-              <MessageSquare size={20} />
-              Notatki
-            </h3>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Zapisuj ważne informacje z rozmowy..."
-              className="w-full h-32 p-3 border rounded-lg resize-none text-sm"
-            />
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-4">
-            <h3 className="font-bold mb-3 flex items-center gap-2">
-              <Clock size={20} />
-              Historia Rozmowy
-            </h3>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {history.length === 0 ? (
-                <p className="text-sm text-gray-400">Brak historii</p>
-              ) : (
-                history.map((item, idx) => (
-                  <div key={idx} className="text-xs bg-gray-50 p-2 rounded">
-                    <span className="text-gray-500">{item.time}</span> - {item.action}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>📧 seweryn.kolodziej@4-eco.pl | 📱 +48 502 963 879 | 🌐 www.4-eco.pl</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default InteractiveCallScript;
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            showStage('start');
+            updateProgressBar();
+            updateHistoryDisplay();
+        });
+    </script>
+</body>
+</html>
