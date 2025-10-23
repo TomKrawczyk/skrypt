@@ -28,6 +28,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
+            position: relative; /* needed for floating back button */
         }
 
         .slide {
@@ -175,10 +176,35 @@
             font-weight: 600;
             color: #667eea;
         }
+
+        /* Floating back button */
+        .btn-back {
+            position: absolute;
+            left: 18px;
+            bottom: 18px;
+            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+            color: white;
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-size: 0.95em;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-3px);
+        }
     </style>
 </head>
 <body>
     <div class="presentation-container">
+        <!-- Floating back button (widoczny zawsze) -->
+        <button class="btn-back" onclick="prevSlide()" aria-label="Wstecz">← Wstecz</button>
+
         <!-- Slajd 1: Start -->
         <div class="slide active" id="slide-1">
             <div class="slide-number">Slajd 1/8</div>
@@ -259,9 +285,9 @@
             <h2>Prezentacja Główna</h2>
             
             <div class="script-text">
-                Cała branża powinna walnąć się w pierś, to co było obiecywane nie mogło być zrealizowane z powodu braku współpracy z rządowymi tworami takimi jak PGE, Tauronem i inne zakłady energetyczne.<br><br>
+                Cała branża powinna walnąć się w pierś, to co było obiecywane nie mogło być zrealizowane z powodu braku współpracy z rządowymi tworami takimi jak PGE, Tauronem i inne zakł[...]
                 
-                Kojarzy Pan różnicę między starymi a nowymi zasadami prawda?(pauza) Wiemy, że ludzie którzy zakupili instalację w nowym systemie rozliczeń są lekko mówiąc sfrustrowani, a Ci co czekają z zakupem, zwlekają kolejny rok i słusznie. Wiemy, że to się w standardzie już w ogóle nie opłaca.<br><br>
+                Kojarzy Pan różnicę między starymi a nowymi zasadami prawda?(pauza) Wiemy, że ludzie którzy zakupili instalację w nowym systemie rozliczeń są lekko mówiąc sfrustrowani, a Ci[...]
                 
                 <em>(pauza)</em>
             </div>
@@ -277,9 +303,9 @@
             <h2>Propozycja Rozwiązania</h2>
             
             <div class="script-text">
-                Właśnie dlatego, Nasza firma szukająca rozwiązań znalazła kilka opcji, które chcielibyśmy przedstawić. Czy u Pana/Pani będzie możliwe znalezienie oszczędności? nie wiem...<br><br>
+                Właśnie dlatego, Nasza firma szukająca rozwiązań znalazła kilka opcji, które chcielibyśmy przedstawić. Czy u Pana/Pani będzie możliwe znalezienie oszczędności? nie wiem...[...]
                 
-                Pytanie moje czy mam zielone światło na umówienie spotkania z <b>doradcą technicznym</b> w celu zrobienia analizy opłacalności, ponieważ nie jestem w stanie precyzyjnie doradzić przez telefon sugeruje spotkanie z Naszym ekspertem.<br><br>
+                Pytanie moje czy mam zielone światło na umówienie spotkania z <b>doradcą technicznym</b> w celu zrobienia analizy opłacalności, ponieważ nie jestem w stanie precyzyjnie doradzi�[...]
                 
                 <em>(pauza)</em>
             </div>
@@ -357,14 +383,50 @@
         function goToSlide(slideNumber) {
             const slides = document.querySelectorAll('.slide');
             slides.forEach(slide => slide.classList.remove('active'));
-            document.getElementById(`slide-${slideNumber}`).classList.add('active');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const el = document.getElementById(`slide-${slideNumber}`);
+            if (el) {
+                el.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // jeśli nie ma takiego slajdu, nie robimy nic
+                console.warn('Brak slajdu o numerze:', slideNumber);
+            }
+        }
+
+        function prevSlide() {
+            const slides = Array.from(document.querySelectorAll('.slide'));
+            const currentIndex = slides.findIndex(s => s.classList.contains('active'));
+            if (currentIndex > 0) {
+                const prevSlide = slides[currentIndex - 1];
+                const match = prevSlide.id.match(/slide-(\d+)/);
+                if (match) {
+                    goToSlide(Number(match[1]));
+                }
+            } else {
+                // Jesteśmy na pierwszym slajdzie — można ewentualnie dać informację lub nic nie robić
+                // tutaj nic nie robimy, ale można rozważyć goToSlide(1) lub wizualne info
+            }
         }
 
         document.addEventListener('keydown', function(event) {
+            // Klawisz Home -> powrót do początku (istniejące zachowanie)
             if (event.key === 'Home') {
                 goToSlide(1);
+                return;
+            }
+
+            // Dodane: klawisze wstecz
+            if (event.key === 'Backspace' || event.key === 'ArrowLeft') {
+                // zapobiegamy domyślnej nawigacji Backspace, gdy nie jesteśmy w polu tekstowym
+                const activeTag = document.activeElement && document.activeElement.tagName.toLowerCase();
+                const isInputActive = ['input', 'textarea'].includes(activeTag) || document.activeElement.isContentEditable;
+                if (!isInputActive) {
+                    event.preventDefault();
+                    prevSlide();
+                } else {
+                    // jeśli fokus jest w polu tekstowym, nie blokujemy Backspace
+                }
             }
         });
     </script>
