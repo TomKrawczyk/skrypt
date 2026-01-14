@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skrypt Sprzedażowy - Ecofundacja</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📞 Skrypt Sprzedażowy</h1>
+            <p>Ecofundacja - Konsultacje Energetyczne</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="slide-container">
+            <div class="slide active" data-slide="1">
+                <h2>1. Powitanie</h2>
+                <div class="content">
+                    <p class="speech">"Dzień dobry Panie Kazimierzu, z tej strony <strong>[TWOJE IMIĘ]</strong>..."</p>
+                    <p class="pause">⏸️ <em>(czekasz na odpowiedź)</em></p>
+                    
+                    <div class="alert">
+                        <strong>❗ Jeżeli nie odpowiada:</strong>
+                        <p>"Halo, słyszymy się? Halo jest tam kto?"</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" data-slide="2">
+                <h2>2. Przedstawienie Celu</h2>
+                <div class="content">
+                    <p class="speech">"Numer mam z naszej bazy danych, mieliśmy już kiedyś kontakt. Czy znajdziemy <strong>TERAZ 2-3 minuty</strong> na rozmowę i od razu mówię z czym dzwonię."</p>
+                    
+                    <p class="pause">⏸️ <em>(pauza)</em></p>
+                    
+                    <p class="speech">"Mamy akcję informacyjną na województwo <strong>[WOJEWÓDZTWO]</strong> i umawiam darmową konsultację z doradcą technicznym."</p>
+                </div>
+            </div>
+
+            <div class="slide" data-slide="3">
+                <h2>3. Wprowadzenie Tematu</h2>
+                <div class="content">
+                    <p class="speech">"O skaczących cenach prądu nie muszę wspominać, bo wszyscy o tym wiedzą, ale zagrożeniem mogą się okazać <strong>taryfy dynamiczne</strong>, o których otwarcie mówi nasz minister energetyki Miłosz Motyka."</p>
+                    
+                    <p class="speech">"Tauron i PGE już wysyłają listy informacyjne."</p>
+                    
+                    <div class="question">
+                        <strong>🔍 PYTANIE:</strong> "Czy Pan/Pani dostał takie pismo?"
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" data-slide="4">
+                <h2>4. Reakcja na Odpowiedź</h2>
+                <div class="content">
+                    <div class="branch">
+                        <div class="option yes">
+                            <strong>✅ Jeżeli TAK:</strong>
+                            <p>"Co o tym piśmie Pan myśli?"</p>
+                        </div>
+                        
+                        <div class="option no">
+                            <strong>❌ Jeżeli NIE:</strong>
+                            <p>"No właśnie dlatego do Pana dzwonimy, bo dla wszystkich to jest nowość."</p>
+                        </div>
+                    </div>
+                    
+                    <p class="speech">"Część osób już się zabezpiecza, a część w ogóle się tym nie interesuje, co może skutkować niespodziankami przy rachunkach."</p>
+                </div>
+            </div>
+
+            <div class="slide" data-slide="5">
+                <h2>5. Propozycja Wartości</h2>
+                <div class="content">
+                    <p class="speech">"W Pana przypadku nie musi tak być, ponieważ z ramienia <strong>Ecofundacji</strong> proponuję spotkanie informacyjne z doradcą, który:"</p>
+                    
+                    <ul class="benefits">
+                        <li>✓ Wytłumaczy nadchodzące zmiany</li>
+                        <li>✓ Zerknie do licznika</li>
+                        <li>✓ Sprawdzi instalację fotowoltaiczną (jeżeli jest)</li>
+                        <li>✓ Udzieli przydatnych informacji o użytkowaniu sprzętu domowego</li>
+                    </ul>
+                    
+                    <p class="note">"Ja umawiając kolejne spotkanie wypełniam założenia akcji o poinformowaniu największej liczby osób."</p>
+                </div>
+            </div>
+
+            <div class="slide" data-slide="6">
+                <h2>6. Umówienie Spotkania</h2>
+                <div class="content">
+                    <div class="question">
+                        <strong>🔍 PYTANIE:</strong> "Zatem czy w dniu jutrzejszym znajdzie Pan około <strong>30-40 minut</strong> na spotkanie?"
+                    </div>
+                    
+                    <div class="branch">
+                        <div class="option yes">
+                            <strong>✅ Jeżeli TAK:</strong>
+                            <p>"Ok, w takim razie zapisuję spotkanie na <strong>[DATA]</strong>, godzina <strong>[GODZINA]</strong>."</p>
+                        </div>
+                        
+                        <div class="option no">
+                            <strong>❌ Jeżeli NIE:</strong>
+                            <p>"Ok, rozumiem. W takim razie czy mam zielone światło do przekazania kontaktu do doradcy, żeby zadzwonił do Pana/Pani i porozmawiał?"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" data-slide="7">
+                <h2>7. Weryfikacja Danych</h2>
+                <div class="content">
+                    <p class="speech">"Potrzebuję jeszcze potwierdzić adres, żeby przypisać do Pana/Pani odpowiedniego doradcę, oraz muszę uszczegółowić parę informacji dla doradcy."</p>
+                    
+                    <div class="question">
+                        <strong>🔍 PYTANIE:</strong> "Czy adres <strong>[ADRES]</strong> jest poprawny?"
+                    </div>
+                    
+                    <div class="alert">
+                        <strong>📋 Następnie:</strong>
+                        <p>Zadaj pytania z tabeli w arkuszu</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" data-slide="8">
+                <h2>8. Zakończenie</h2>
+                <div class="content">
+                    <p class="speech finale">"Dziękuję bardzo za rozmowę. Do usłyszenia i miłego dnia!"</p>
+                    
+                    <div class="summary">
+                        <h3>✅ Podsumowanie</h3>
+                        <p>Rozmowa zakończona. Pamiętaj o:</p>
+                        <ul>
+                            <li>Zapisaniu danych w systemie</li>
+                            <li>Potwierdzeniu spotkania (jeśli umówione)</li>
+                            <li>Przekazaniu informacji do doradcy</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" class="btn btn-secondary">← Poprzedni</button>
+            <span class="slide-counter">
+                <span id="currentSlide">1</span> / <span id="totalSlides">8</span>
+            </span>
+            <button id="nextBtn" class="btn btn-primary">Następny →</button>
+        </div>
+
+        <div class="keyboard-hint">
+            <p>💡 Użyj strzałek ← → lub klawiszy A/D do nawigacji</p>
+        </div>
+    </div>
+
+    <script src="js/slides.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
